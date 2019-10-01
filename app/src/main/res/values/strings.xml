@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LiveReports</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDXSygWK8Qdt5w_X4fFHFK__mlH2xOiXCQ</string>
+
+</resources>
