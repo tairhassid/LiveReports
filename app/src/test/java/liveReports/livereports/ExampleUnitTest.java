@@ -1,4 +1,4 @@
-package project.livereports;
+package liveReports.livereports;
 
 import org.junit.Test;
 
