@@ -1,119 +1,83 @@
 package liveReports.utils;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
+import android.os.Looper;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
-public class LocationService {
+public class LocationService extends Service {
 
     private static final String TAG = "LocationService";
-    private /*static*/ LatLng currentLatlng;
-    private static LocationService locationService;
-    private /*static*/ boolean locationPermissionGranted;
-    private /*static*/ FusedLocationProviderClient fusedLocationProviderClient;
-    private static final int PERMISSION_REQ_ACCESS_FINE_LOCATION = 9003;
-    private Activity callingActivity;
-//    private LocationService() {
-//
-//    }
-//
-//    public static LocationService getInstance() {
-//        if(locationService == null) {
-//            locationService = new LocationService();
-//        }
-//        return locationService;
-//    }
 
-    public LocationService(Activity callingActivity) {
-        this.callingActivity = callingActivity;
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(callingActivity);
+    private final IBinder binder = new LocalBinder();
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private final long INTERVAL = 4000;
+    private final long FASTEST_INTERVAL = 2000;
+    private LatLng currentLatLng;
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-    public /*static*/ boolean getLocationPermission(/*Activity activity*/) {
-        if (ActivityCompat.checkSelfPermission(callingActivity.getApplicationContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "getLocationPermission: " + locationPermissionGranted);
-            locationPermissionGranted = true;
-            setLatlng();
-//            getLastKnownLocation();
-        } else {
-            Log.d(TAG, "getLocationPermission: in else, requesting");
-            ActivityCompat.requestPermissions(callingActivity,
-                    new String[]{
-                            android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSION_REQ_ACCESS_FINE_LOCATION);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        getLocation();
+        return START_NOT_STICKY;
+    }
+
+    private void getLocation() {
+        final LocationRequest locationRequest = createLocationRequest();
+
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if(locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                }
+            }
+        }, Looper.myLooper());
+    }
+
+    private LocationRequest createLocationRequest() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        return locationRequest;
+    }
+
+    public class LocalBinder extends Binder {
+        public LocationService getServiceInstance() {
+            // Return this instance of LocalService so clients can call public methods
+            return LocationService.this;
         }
-        Log.d(TAG, "getLocationPermission: locationPermissionGranted=" + locationPermissionGranted);
-        return locationPermissionGranted;
     }
 
-    public /*static*/ void setLatlng(/*Activity activity*/) {
-        Log.d(TAG, "setLatlng: called " + currentLatlng);
-//        try {
-//            if(locationPermissionGranted) {
-
-                Task location = fusedLocationProviderClient.getLastLocation();
-                location.addOnSuccessListener(callingActivity, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        Log.d(TAG, "onSuccess: called");
-                        if (location != null) {
-                            Log.d(TAG, "getLastKnownLocation: location " + location );
-
-//                            currentLatlng = new LatLng(location.getLatitude(), location.getLongitude());
-                            setCurrentLatlng(new LatLng(location.getLatitude(), location.getLongitude()));
-                            Log.d(TAG, "onSuccess: " + currentLatlng);
-                        }
-                    }
-                });
-//                location.addOnCompleteListener(new OnCompleteListener<Location>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Location> task) {
-//                        if(task.isSuccessful()) {
-//                            Log.d(TAG, "onComplete: found location");
-//                            Location currentLocation = task.getResult();
-//                            currentLatlng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-//                            Log.d(TAG, "onComplete: location = " + currentLatlng.latitude + "  " + currentLatlng.longitude) ;
-////                            moveCamera(latLng, 15f);
-////                            TODO zoom variable
-//                        }
-//                        else
-//                            Log.d(TAG, "onComplete: location is null");
-//                    }
-//                });
-//            }
-//        } catch (SecurityException e) {
-//            Log.e(TAG, "setLatlng: SecurityException " + e.getMessage() );
-//        }
-//        Log.d(TAG, "setLatlng: latlng= " + currentLatlng);
-
+    public LatLng getCurrentLatLng() {
+        return currentLatLng;
     }
-
-    private void setCurrentLatlng(LatLng latlng) {
-        this.currentLatlng = latlng;
-    }
-
-    public /*static*/ LatLng getCurrentLatlng() {
-//        Log.d(TAG, "getCurrentLatlng: " + currentLatlng);
-        return currentLatlng;
-    }
-
 }

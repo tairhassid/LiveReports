@@ -2,4 +2,7 @@
     <string name="app_name">LiveReports</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDXSygWK8Qdt5w_X4fFHFK__mlH2xOiXCQ</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="share_report_headline">Share Your Report</string>
+
 </resources>

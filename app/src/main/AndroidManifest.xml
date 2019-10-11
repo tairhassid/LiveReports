@@ -20,10 +20,11 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-       <!-- <service android:name="liveReports.utils.LocationService" android:stopWithTask="true">-->
-            <!-- stopWithTask- stop the service if the app is closed-->
-        <!--</service>-->
-</application>
+
+<!--        <service android:name="liveReports.utils.LocationService" android:stopWithTask="true"/>-->
+        <!-- stopWithTask- stop the service if the app is closed-->
+
+    </application>
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
