@@ -5,4 +5,16 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="share_report_headline">Share Your Report</string>
 
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string-array name="types_array">
+        <item name="weather">Weather</item>
+        <item>Safety Hazard</item>
+        <item>Fire</item>
+        <item>Violence</item>
+        <item>Accident</item>
+        <item>Public Event</item>
+        <item>Other</item>
+    </string-array>
+
 </resources>

@@ -6,6 +6,7 @@ import android.location.Location;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -29,6 +30,7 @@ public class LocationService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        getLocation();
         return binder;
     }
 
@@ -36,12 +38,14 @@ public class LocationService extends Service {
     public void onCreate() {
         super.onCreate();
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        Log.d(TAG, "onCreate: ");
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         getLocation();
+        Log.d(TAG, "onStartCommand: ");
         return START_NOT_STICKY;
     }
 
@@ -51,11 +55,13 @@ public class LocationService extends Service {
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
+                Log.d(TAG, "onLocationResult: ");
                 if(locationResult == null) {
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
                     currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    Log.d(TAG, "onLocationResult: in location service: " + currentLatLng);
                 }
             }
         }, Looper.myLooper());
@@ -70,6 +76,7 @@ public class LocationService extends Service {
         return locationRequest;
     }
 
+    //https://developer.android.com/guide/components/bound-services
     public class LocalBinder extends Binder {
         public LocationService getServiceInstance() {
             // Return this instance of LocalService so clients can call public methods

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "163760702395",
+    "firebase_url": "https://livereports.firebaseio.com",
+    "project_id": "livereports",
+    "storage_bucket": "livereports.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163760702395:android:bfee1c8068b7b83f08ba9e",
+        "android_client_info": {
+          "package_name": "project.livereports"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "163760702395-k919e4qp12tfikqm0b3pj0fj7bgmhpnn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "project.livereports",
+            "certificate_hash": "7111c70cec842a5481f7cefd293b61a50397bdfa"
+          }
+        },
+        {
+          "client_id": "163760702395-pl0ivmutmhvc48blrtr1f1ucsmiv666t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqUc9R-Ak2Ods_PCHoRfB2SefgQZdk1EQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "163760702395-pl0ivmutmhvc48blrtr1f1ucsmiv666t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

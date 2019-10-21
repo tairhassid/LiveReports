@@ -1,8 +1,11 @@
 package liveReports.ui;
 
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,6 +29,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import liveReports.activities.MainActivity;
 import liveReports.livereports.R;
 import liveReports.utils.LocationHelper;
+import liveReports.utils.LocationService;
 
 public class MapFragment extends Fragment {
 
@@ -38,30 +42,34 @@ public class MapFragment extends Fragment {
     private Runnable runnable;
     private LatLng latLng;
     private FloatingActionButton fab;
+    private Context context;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         handler = new Handler();
-//        locationHandler = LocationHandler.getInstance();
         Log.d(TAG, "onCreate: called");
         locationHelper = new LocationHelper(getActivity());
-        getLocationPermission();
+//        startLocationService();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: called");
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map_frg);
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
+                Log.d(TAG, "onMapReady: ");
                 mMap = googleMap;
             }
         });
+
+        getLocationPermission();
 
         fab = rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -75,7 +83,13 @@ public class MapFragment extends Fragment {
         return rootView;
     }
 
-//    @Override
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
+
+    //    @Override
 //    public void onMapReady(GoogleMap googleMap) {
 //        mMap = googleMap;
 //        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -122,6 +136,7 @@ public class MapFragment extends Fragment {
 //        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
 //                .findFragmentById(R.id.map);
 //        mapFragment.getMapAsync(this);
+        Log.d(TAG, "initMap: called");
         if(locationPermissionGranted) {
             Log.d(TAG, "initMap: locationPermissionGranted is true");
             getCurrentLocation();
@@ -134,8 +149,6 @@ public class MapFragment extends Fragment {
     private void getCurrentLocation() {
         if(locationPermissionGranted) {
             Log.d(TAG, "getCurrentLocation: ");
-//            LocationHandler.getCurrentLocation(this);
-//            LatLng latLng = LocationHandler.getCurrentLatlng();
             locationHelper.setLatlng();
 
             runnable = new Runnable() {
@@ -143,28 +156,25 @@ public class MapFragment extends Fragment {
                 public void run() {
                     Log.d(TAG, "run: called");
                     do {
-//                        Log.d(TAG, "run: in loop");
                         latLng = locationHelper.getCurrentLatlng();
                     } while (latLng == null);
                     if(latLng != null)
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                mMap.setMyLocationEnabled(true);
-                                moveCamera(latLng, 15f);
+                                if(mMap != null) {
+                                    mMap.setMyLocationEnabled(true);
+                                    moveCamera(latLng, 15f);
+                                }
                             }
                         });
-//                    handler.post(runnable);
                 }
             };
 
             Thread t = new Thread(runnable);
             t.start();
-//            handler.postDelayed(runnable, 1000);
-//            handler.post(runnable);
             if(latLng != null) {
                 Log.d(TAG, "getCurrentLocation: latlng not null");
-//                moveCamera(latLng, 15f);
             }
             //TODO zoom variable
         }
@@ -174,4 +184,6 @@ public class MapFragment extends Fragment {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
     }
+
+
 }
