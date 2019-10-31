@@ -2,12 +2,77 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="liveReports.ui.GalleryFragment">
+    tools:context="liveReports.ui.AddImageFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="gallery_fragment" />
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/gallery_relativeLayout">
+
+
+            <include layout="@layout/snippet_top_gallerytoolbar" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:weightSum="100"
+            android:orientation="vertical"
+            android:layout_below="@id/gallery_relativeLayout"
+            android:layout_marginTop="20dp">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/image_border"
+                android:layout_weight="40">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/image_view_preview"
+                android:layout_centerInParent="true"
+                android:layout_margin="25dp"
+                android:src="@drawable/image_icon" />
+
+            </RelativeLayout>
+
+
+            <Button
+                android:layout_width="190dp"
+                android:layout_height="wrap_content"
+                android:text="Choose from gallery"
+                android:layout_gravity="center_horizontal"
+                android:id="@+id/btn_add_image"
+                android:layout_marginTop="20dp"/>
+
+            <Button
+                android:layout_width="190dp"
+                android:layout_height="wrap_content"
+                android:text="Take a photo"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:id="@+id/btn_take_photo"/>
+
+<!--            <GridView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_weight="60"-->
+<!--                android:id="@+id/grid_view_gallery"-->
+<!--                android:numColumns="5"-->
+<!--                android:verticalSpacing="1dp"-->
+<!--                android:horizontalSpacing="1dp"-->
+<!--                android:stretchMode="none"-->
+<!--                android:gravity="center"-->
+<!--                android:layout_marginTop="1dp"/>-->
+
+        </LinearLayout>
+    </RelativeLayout>
+
 
 </FrameLayout>

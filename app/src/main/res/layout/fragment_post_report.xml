@@ -4,45 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="liveReports.ui.PostReportFragment"
-    android:background="@drawable/bg">
+    android:background="@drawable/background_style">
 
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#6AD6D6D6"
     android:orientation="vertical">
 
-
-    <LinearLayout
-        android:id="@+id/layout_top"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#85DDA4A4">
-
-        <Button
-            android:layout_width="50dp"
-            android:layout_height="60dp"
-            android:background="@drawable/ic_back"
-            android:id="@+id/back_button"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-black"
-            android:padding="15dp"
-            android:text="@string/share_report_headline"
-            android:textSize="25sp"
-            android:textColor="#5f3e2e"/>
-
-    </LinearLayout>
+    <include layout="@layout/layout_app_bar"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/layout_top"
-        android:background="#6AD6D6D6"
         android:padding="30dp">
 
         <!--        <Button-->
@@ -55,7 +29,7 @@
         <EditText
             android:id="@+id/name_edit_text"
             android:layout_width="200dp"
-            android:layout_height="40dp"
+            android:layout_height="43dp"
             android:textColor="#FF000000"
             android:textSize="20sp"
             android:hint="Reporter's name"/>
@@ -74,6 +48,12 @@
             android:hint="type..."
             android:layout_below="@+id/type_spinner"
             android:textSize="20sp"/>
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_above="@id/btn_upload_photo"
+            android:id="@+id/sharedImage"/>
         <!--            android:layout_below="@id/name_text"-->
 
 
@@ -93,17 +73,20 @@
             android:layout_height="wrap_content"
             android:text="Upload a photo"
             android:id="@+id/btn_upload_photo"
-            android:layout_above="@id/btn_submit"/>
+            android:layout_alignParentBottom="true"/>
 
         <Button
             android:id="@+id/btn_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
             android:text="Submit" />
     </RelativeLayout>
 
 </LinearLayout>
+
+
 
 
 

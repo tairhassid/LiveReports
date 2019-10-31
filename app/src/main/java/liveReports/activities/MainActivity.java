@@ -4,18 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import liveReports.bl.PostReport;
 import liveReports.livereports.R;
-import liveReports.ui.AddImageFragment;
 import liveReports.ui.MapFragment;
-import liveReports.ui.PostReportFragment;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -50,18 +45,12 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().
                     add(R.id.fragment_container, firstFragment).commit();
         }
+
+        Log.d(TAG, "onCreate: ");
+
     }
 
-    public void moveToPostFragment() {
-        PostReportFragment postReportFragment = new PostReportFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, postReportFragment)
-                .addToBackStack("MapFragment")
-                .commit();
 
-        currentFragment = postReportFragment;
-    }
 
     public void moveToMapFragment() {
         MapFragment mapFragment = new MapFragment();
@@ -100,13 +89,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
-    public void moveToAddImageFragment() {
-        AddImageFragment addImageFragment = new AddImageFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, addImageFragment)
-                .commit();
 
-        currentFragment = addImageFragment;
-    }
+
+
 }

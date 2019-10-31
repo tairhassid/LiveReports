@@ -20,8 +20,8 @@ public class PostReport {
             report.setName(name);
             report.setType(Report.Type.values()[(int)typeId]);
             report.setReportText(reportText);
-            report.setLatLng(latLng);
-            reportData.save(report);
+//            report.setGeoPoint();
+//            reportData.save(report);
         }
     }
 }

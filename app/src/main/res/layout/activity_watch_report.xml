@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="liveReports.activities.WatchReportActivity"
+    android:background="@drawable/background_style">
+
+    <include layout="@layout/snippet_top_gallerytoolbar"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="#B4CCC9C9"
+        android:padding="30dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="@color/mainColor"
+            android:text="Tair"
+            android:textStyle="bold"
+            android:id="@+id/text_view_name"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:id="@+id/text_view_time"
+            android:layout_below="@id/text_view_name"
+            android:text="12/1/19"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/text_view_report_type"
+            android:textSize="15sp"
+            android:text="Weather Report"
+            android:layout_below="@id/text_view_time"
+            android:layout_marginTop="10dp"/>
+
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:id="@+id/text_view_report"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:textSize="15sp"-->
+<!--            android:layout_below="@id/text_view_report_type"-->
+<!--            android:text="Getting colder, raining with lightning storms"/>-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="300dp"-->
+<!--            android:layout_height="300dp"-->
+<!--            android:id="@+id/report_image"-->
+<!--            android:layout_marginTop="20dp"-->
+<!--            android:layout_below="@id/text_view_report"-->
+<!--            android:layout_centerInParent="true"/>-->
+
+    </RelativeLayout>
+
+</RelativeLayout>

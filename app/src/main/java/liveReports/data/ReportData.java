@@ -1,35 +1,181 @@
 package liveReports.data;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import liveReports.bl.PostManager;
 import liveReports.bl.Report;
+import liveReports.livereports.R;
+import liveReports.utils.CallbacksHandler;
 
 public class ReportData {
 
     private static final String TAG = "ReportData";
+    private final String PATH = "photos/posts/";
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+    private DocumentReference ref;
+    private StorageReference storageReference;
+    private double mPhotoUploadProgress;
 
-    public void save(Report report) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference ref = db.collection("reports").document();
+
+    public ReportData() {
+        this.auth = FirebaseAuth.getInstance();
+        this.storageReference = FirebaseStorage.getInstance().getReference();
+        this.db = FirebaseFirestore.getInstance();
+
+    }
+
+    public void save(Context context, Report report, CallbacksHandler<Uri> callbacksHandler) {
+        saveReport(context, report, callbacksHandler);
+    }
+
+
+    private void saveReport(final Context context, final Report report, final CallbacksHandler<Uri> callbacksHandler) {
+        ref = db.collection("reports").document();
 
         ref.set(report).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()) {
                     Log.d(TAG, "onComplete: success");
+                    if(!report.getSelectedImage().equals("")) {
+                        storeImage(context, report, callbacksHandler);
+                    }
                 }
             }
         });
     }
 
-    public void getAllReports() {
+    private void storeImage(final Context context, Report report, final CallbacksHandler<Uri> callbacksHandler) {
+        final StorageReference photoStorageRef = storageReference.child(PATH + ref.getId());
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                    context.getContentResolver(),
+                    Uri.parse(report.getSelectedImage()));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
 
+            UploadTask uploadTask = photoStorageRef.putBytes(data);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                    // ...
+                    Log.d(TAG, "onSuccess: upload");
+                    photoStorageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            addPhotoUrlToReport(uri, callbacksHandler);
+                        }
+                    });
+                }
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                    double progress = (100*taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    Log.d(TAG, "onProgress: " + progress);
+                    if(progress - 15 > mPhotoUploadProgress) {
+                        Toast.makeText(context,
+                                "Photo upload progress: " + String.format("%.0f", progress),
+                                Toast.LENGTH_SHORT).show();
+                        mPhotoUploadProgress = progress;
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addPhotoUrlToReport(final Uri uri, final CallbacksHandler<Uri> callbacksHandler) {
+        Report currentReport = PostManager.getInstance().getCurrentReport();
+        currentReport.setImageDownloadUrl(uri.toString());
+        Log.d(TAG, "addPhotoUrlToReport: updating database");
+
+        ref.update("imageDownloadUrl", uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                callbacksHandler.onCallback(uri);
+            }
+        });
+    }
+
+
+    public void getReportsWithinArea(GeoPoint cameraPos, double wantedDif, final CallbacksHandler<List<Report>> callbacksHandler) {
+        CollectionReference collectionRef = db.collection("reports");
+
+        Query markers = collectionRef
+                .whereGreaterThanOrEqualTo(
+                        "geoPoint",
+                        new GeoPoint(cameraPos.getLatitude() - wantedDif,
+                                cameraPos.getLongitude() - wantedDif))
+                .whereLessThanOrEqualTo(
+                        "geoPoint",
+                        new GeoPoint(cameraPos.getLatitude() + wantedDif,
+                                cameraPos.getLongitude() + wantedDif));
+
+        markers.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                Log.d(TAG, "onComplete: before if");
+                if(task.isSuccessful()) {
+                    Log.d(TAG, "onComplete: task successful");
+                    List<Report> reports = new ArrayList<>();
+                    Log.d(TAG, "onComplete: " + task.getResult());
+                    for(DocumentSnapshot document : task.getResult()) {
+                        Log.d(TAG, "onComplete: in loop");
+                        Report report = document.toObject(Report.class);
+//                        Report report = new Report();
+//                        report.setName((String) document.get("name"));
+//                        report.setImageDownloadUrl((String) document.get("imageDownloadUrl"));
+//                        String reportType = (String) document.get("type");
+////                        report.setType(Report.Type.valueOf(reportType));
+//                        report.setLatLng(new LatLng((double)document.get("latitude"), (double)document.get("longitude")));
+//                        report.setReportText((String) document.get("reportText"));
+//                        report.setTimestamp((Date) document.get("timestamp"));
+                        Log.d(TAG, "onComplete: " + report);
+                        reports.add(report);
+                    }
+                    callbacksHandler.onCallback(reports);
+                }
+            }
+        });
     }
 }

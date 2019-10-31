@@ -14,8 +14,6 @@ public class AddImageFragmentPagerAdapter extends FragmentPagerAdapter {
     private final List<Fragment> fragmentList;
     private final List<String> fragmentNamesList;
 
-
-
     public AddImageFragmentPagerAdapter(@NonNull FragmentManager fm, int behavior) {
         super(fm, behavior);
         fragmentList = new ArrayList<>();
@@ -43,4 +41,5 @@ public class AddImageFragmentPagerAdapter extends FragmentPagerAdapter {
         fragmentList.add(fragment);
         fragmentNamesList.add(name);
     }
+
 }

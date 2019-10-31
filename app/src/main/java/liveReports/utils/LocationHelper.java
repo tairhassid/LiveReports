@@ -2,7 +2,6 @@ package liveReports.utils;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.util.Log;
@@ -19,7 +18,7 @@ public class LocationHelper {
 
     private static final String TAG = "LocationHelper";
 
-    private static LatLng currentLatlng;
+    private static LatLng currentLatLng;
 
     private boolean locationPermissionGranted;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -49,8 +48,8 @@ public class LocationHelper {
         return locationPermissionGranted;
     }
 
-    public void setLatlng() {
-        Log.d(TAG, "setLatlng: called " + currentLatlng);
+    public void setLatLng(final CallbacksHandler<LatLng> callbacksHandler) {
+        Log.d(TAG, "setLatLng: called " + currentLatLng);
         Task location = fusedLocationProviderClient.getLastLocation();
         location.addOnSuccessListener(callingActivity, new OnSuccessListener<Location>() {
             @Override
@@ -58,48 +57,24 @@ public class LocationHelper {
                 Log.d(TAG, "onSuccess: called");
                 if (location != null) {
                     Log.d(TAG, "getLastKnownLocation: location " + location );
-
-                    setCurrentLatlng(new LatLng(location.getLatitude(), location.getLongitude()));
-                    Log.d(TAG, "onSuccess: " + currentLatlng);
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    setCurrentLatLng(latLng);
+                    Log.d(TAG, "onSuccess: " + getCurrentLatlng());
+                    callbacksHandler.onCallback(getCurrentLatlng());
                 }
             }
         });
     }
 
-    private void setCurrentLatlng(LatLng latlng) {
-        this.currentLatlng = latlng;
+    //currentLatLng is a static variable
+    private void setCurrentLatLng(LatLng latlng) {
+        this.currentLatLng = latlng;
     }
 
     public LatLng getCurrentLatlng() {
-        return currentLatlng;
+//        Log.d(TAG, "getCurrentLatlng: " + currentLatLng);
+        return currentLatLng;
     }
 
-    /*private void startLocationService() {
-        if(!isLocationServiceRunning()) {
-            Intent serviceIntent = new Intent(callingActivity, LocationService.class);
-            Log.d(TAG, "startLocationService: calling: " + callingActivity.toString());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                callingActivity.startForegroundService(serviceIntent);
-                Log.d(TAG, "startLocationService: ");
-
-            } else {
-                callingActivity.startService(serviceIntent);
-                Log.d(TAG, "startLocationService: ");
-
-            }
-        }
-    }
-
-    private boolean isLocationServiceRunning() {
-        ActivityManager activityManager = (ActivityManager) callingActivity.getSystemService(Context.ACTIVITY_SERVICE);
-        for(ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE)) {
-            if("liveReports.utils.LocationService".equals(serviceInfo.service.getClassName())) {
-                Log.d(TAG, "isLocationServiceRunning: already runnning");
-                return true;
-            }
-        }
-        Log.d(TAG, "isLocationServiceRunning: not running");
-        return false;
-    }*/
 
 }

@@ -16,6 +16,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.firestore.GeoPoint;
 
 public class LocationService extends Service {
 
@@ -25,7 +26,7 @@ public class LocationService extends Service {
     private FusedLocationProviderClient fusedLocationProviderClient;
     private final long INTERVAL = 4000;
     private final long FASTEST_INTERVAL = 2000;
-    private LatLng currentLatLng;
+    private GeoPoint geoPoint;
 
     @Nullable
     @Override
@@ -60,8 +61,8 @@ public class LocationService extends Service {
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                    currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    Log.d(TAG, "onLocationResult: in location service: " + currentLatLng);
+                    geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    Log.d(TAG, "onLocationResult: in location service: " + geoPoint);
                 }
             }
         }, Looper.myLooper());
@@ -84,7 +85,7 @@ public class LocationService extends Service {
         }
     }
 
-    public LatLng getCurrentLatLng() {
-        return currentLatLng;
+    public GeoPoint getCurrentLatLng() {
+        return geoPoint;
     }
 }

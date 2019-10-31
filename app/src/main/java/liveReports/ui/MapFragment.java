@@ -1,11 +1,8 @@
 package liveReports.ui;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -24,17 +21,26 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.GeoPoint;
 
-import liveReports.activities.MainActivity;
+import java.util.List;
+
+import liveReports.activities.PostReportActivity;
+import liveReports.bl.Report;
+import liveReports.data.ReportData;
 import liveReports.livereports.R;
+import liveReports.utils.CallbacksHandler;
 import liveReports.utils.LocationHelper;
-import liveReports.utils.LocationService;
 
 public class MapFragment extends Fragment {
 
     private static final String TAG = "MapFragment";
-    GoogleMap mMap;
+    private static final float ZOOM = 15f;
+    public static final double DIF = 0.005;
+    private GoogleMap mMap;
     private boolean locationPermissionGranted;
     private static final int PERMISSION_REQ_ACCESS_FINE_LOCATION = 9003;
     private LocationHelper locationHelper;
@@ -43,12 +49,15 @@ public class MapFragment extends Fragment {
     private LatLng latLng;
     private FloatingActionButton fab;
     private Context context;
+    private ReportData reportData;
+    private GeoPoint currentCameraPos;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         handler = new Handler();
+        reportData = new ReportData();
         Log.d(TAG, "onCreate: called");
         locationHelper = new LocationHelper(getActivity());
 //        startLocationService();
@@ -58,7 +67,9 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: called");
+        // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map_frg);
         mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -66,6 +77,8 @@ public class MapFragment extends Fragment {
             public void onMapReady(GoogleMap googleMap) {
                 Log.d(TAG, "onMapReady: ");
                 mMap = googleMap;
+                setOnCameraMoveListener();
+//                setOnMarkerClickListener();
             }
         });
 
@@ -75,12 +88,57 @@ public class MapFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainActivity)getActivity()).moveToPostFragment();
+//                ((MainActivity)getActivity()).moveToPostFragment();
+                Intent intent = new Intent(getActivity(), PostReportActivity.class);
+                startActivity(intent);
             }
         });
 
-        // Inflate the layout for this fragment
         return rootView;
+    }
+
+    private void setOnMarkerClickListener() {
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                return true;
+            }
+        });
+    }
+
+    private void setOnCameraMoveListener() {
+        mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+                GeoPoint center =
+                        new GeoPoint(mMap.getCameraPosition().target.latitude,
+                                mMap.getCameraPosition().target.longitude);
+                if(distance(center, currentCameraPos) >= DIF) {
+                    Log.d(TAG, "onCameraMove: center=" +center);
+                    reportData.getReportsWithinArea(currentCameraPos, DIF, new CallbacksHandler<List<Report>>() {
+
+                        @Override
+                        public void onCallback(List<Report> callbackObject) {
+                            for(Report report : callbackObject) {
+                                Log.d(TAG, "onCallback: from getReportsWithinArea");
+                                Marker marker = mMap.addMarker(new MarkerOptions().position(
+                                        new LatLng(report.getGeoPoint().getLatitude(),report.getGeoPoint().getLongitude())));
+                            }
+                        }
+                    });
+                    currentCameraPos = center;
+                }
+            }
+        });
+    }
+
+    private double distance(GeoPoint newPos, GeoPoint oldPos) {
+        double ac = Math.abs(newPos.getLongitude() - oldPos.getLongitude());
+        double cb = Math.abs(newPos.getLatitude() - oldPos.getLatitude());
+
+        return Math.hypot(ac, cb);
+
     }
 
     @Override
@@ -89,19 +147,9 @@ public class MapFragment extends Fragment {
         this.context = context;
     }
 
-    //    @Override
-//    public void onMapReady(GoogleMap googleMap) {
-//        mMap = googleMap;
-//        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-//                .findFragmentById(R.id.map);
-//        mapFragment.getMapAsync(this);
-//    }
-
     private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission: called");
-//        if(locationHandler.getLocationPermission(this)){
         if(locationHelper.getLocationPermission()) {
-//            locationHandler.getCurrentLocation(/*this*/);
             locationPermissionGranted = true;
             initMap();
         }
@@ -124,7 +172,6 @@ public class MapFragment extends Fragment {
                 }
                 locationPermissionGranted = true;
                 Log.d(TAG, "onRequestPermissionsResult: calling fused");
-//                getLastKnownLocation();
                 initMap();
             } else {
                 Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
@@ -133,9 +180,6 @@ public class MapFragment extends Fragment {
     }
 
     private void initMap() {
-//        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-//                .findFragmentById(R.id.map);
-//        mapFragment.getMapAsync(this);
         Log.d(TAG, "initMap: called");
         if(locationPermissionGranted) {
             Log.d(TAG, "initMap: locationPermissionGranted is true");
@@ -149,41 +193,26 @@ public class MapFragment extends Fragment {
     private void getCurrentLocation() {
         if(locationPermissionGranted) {
             Log.d(TAG, "getCurrentLocation: ");
-            locationHelper.setLatlng();
+            locationHelper.setLatLng(new CallbacksHandler<LatLng>() {
 
-            runnable = new Runnable() {
                 @Override
-                public void run() {
-                    Log.d(TAG, "run: called");
-                    do {
-                        latLng = locationHelper.getCurrentLatlng();
-                    } while (latLng == null);
-                    if(latLng != null)
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if(mMap != null) {
-                                    mMap.setMyLocationEnabled(true);
-                                    moveCamera(latLng, 15f);
-                                }
-                            }
-                        });
+                public void onCallback(LatLng callbackObject) {
+                    Log.d(TAG, "onCallback: latlng = " + callbackObject);
+                    mMap.setMyLocationEnabled(true);
+                    moveCamera(callbackObject, ZOOM);
                 }
-            };
-
-            Thread t = new Thread(runnable);
-            t.start();
-            if(latLng != null) {
-                Log.d(TAG, "getCurrentLocation: latlng not null");
-            }
-            //TODO zoom variable
+            });
         }
     }
 
     private void moveCamera(LatLng latLng, float zoom) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-
+        currentCameraPos = new GeoPoint(latLng.latitude, latLng.longitude);
     }
 
-
+    @Override
+    public void onPause() {
+        super.onPause();
+        handler.removeCallbacks(runnable);
+    }
 }
