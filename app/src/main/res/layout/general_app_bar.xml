@@ -17,24 +17,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <ImageView
+                <Button
                     android:layout_width="50dp"
                     android:layout_height="60dp"
                     android:layout_marginEnd="20dp"
                     android:layout_centerVertical="true"
-                    android:id="@+id/image_view_close_add_image"
-                    android:src="@drawable/ic_back"/>
+                    android:id="@+id/back_btn"
+                    android:background="@drawable/ic_back"/>
 
-<!--                <Spinner-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_toRightOf="@id/image_view_close_add_image"-->
-<!--                    android:id="@+id/spinner_directory"-->
-<!--                    android:textSize="20sp"-->
-<!--                    android:text="Gallery"-->
-<!--                    android:layout_centerVertical="true"-->
-<!--                    android:gravity="center_vertical">-->
-<!--                </Spinner>-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-black"
+                    android:padding="15dp"
+                    android:textSize="25sp"
+                    android:textColor="#5f3e2e"
+                    android:layout_toRightOf="@id/back_btn"
+                    android:id="@+id/text_view_headline"/>
 
                 <ImageView
                     android:layout_width="50dp"

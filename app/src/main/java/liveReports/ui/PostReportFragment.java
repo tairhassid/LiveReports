@@ -1,17 +1,19 @@
 package liveReports.ui;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.Image;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,27 +24,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.io.IOException;
 
 import liveReports.activities.MainActivity;
 import liveReports.activities.PostReportActivity;
-import liveReports.activities.WatchReportActivity;
 import liveReports.bl.PostManager;
-import liveReports.bl.PostReport;
 import liveReports.bl.Report;
 import liveReports.livereports.R;
 import liveReports.utils.AddImagePermissions;
 import liveReports.utils.CallbacksHandler;
-import liveReports.utils.LocationHelper;
 import liveReports.utils.LocationService;
 import liveReports.utils.LocationService.LocalBinder;
 
@@ -50,23 +48,14 @@ public class PostReportFragment extends Fragment {
 
     //constants
     private static final String TAG = "PostReportFragment";
-    private static final String[] PERMISSIONS = {
-            Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-    private static final int PERMISSIONS_REQ_CODE = 1;
 
     //variables
-    private LocationHelper locationHelper;
     private LocationService mService;
     private GeoPoint geoPoint;
     private boolean mBound = false;
-    private PostReport postReport;
     private ItemSelected itemSelected;
     private AddImagePermissions addImagePermissions;
     private PostManager postManager;
-    private Bitmap mImageBitmap;
     //UI variables
     private Spinner typeSpinner;
     private View fragmentView;
@@ -76,14 +65,60 @@ public class PostReportFragment extends Fragment {
     private EditText reportText;
     private EditText name;
     private ImageView sharedImage;
+    private TextView headlineText;
+    private TextView errorText;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        locationHelper = new LocationHelper(getActivity());
-        postReport = new PostReport();
-        Log.d(TAG, "onCreate: called");
+        postManager = PostManager.getInstance();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        Log.d(TAG, "onCreateView: ");
+        // Inflate the layout for this fragment
+        fragmentView = inflater.inflate(R.layout.fragment_post_report, container, false);
+
+        name = fragmentView.findViewById(R.id.name_edit_text);
+        typeSpinner = fragmentView.findViewById(R.id.type_spinner);
+        sharedImage = fragmentView.findViewById(R.id.shared_image);
+        headlineText = fragmentView.findViewById(R.id.text_view_headline);
+        errorText = fragmentView.findViewById(R.id.error);
+
+        headlineText.setText(R.string.post_fragment_headline);
+
+        initReportText();
+        initSubmitButton();
+        initBackButton();
+        initTypeSpinner();
+        initUploadImgBtn();
+
+        setReportFieldsOnView();
+
+
+        return fragmentView;
+    }
+
+    private void initReportText() {
+        reportText = fragmentView.findViewById(R.id.report_edit_text);
+        reportText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                errorText.setText(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
     }
 
     @Override
@@ -103,27 +138,12 @@ public class PostReportFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        Log.d(TAG, "onCreateView: ");
-        // Inflate the layout for this fragment
-        fragmentView = inflater.inflate(R.layout.fragment_post_report, container, false);
-        postManager = PostManager.getInstance();
-        name = fragmentView.findViewById(R.id.name_edit_text);
-        reportText = fragmentView.findViewById(R.id.report_edit_text);
-        typeSpinner = fragmentView.findViewById(R.id.type_spinner);
-        sharedImage = fragmentView.findViewById(R.id.sharedImage);
-
-        initSubmitButton();
-        initBackButton();
-        initTypeSpinner();
-        initUploadImgBtn();
-
-        setReportFieldsOnView();
-
-
-        return fragmentView;
+        if(addImagePermissions.hasAllPermissions()) {
+            moveToAddImageFragment();
+        }
     }
 
     private void setReportFieldsOnView() {
@@ -132,16 +152,10 @@ public class PostReportFragment extends Fragment {
         typeSpinner.setSelection(currentReport.getOrdinalOfType());
         reportText.setText(currentReport.getReportText());
 
-        //https://stackoverflow.com/questions/5991319/capture-image-from-camera-and-display-in-activity
-//        try {
-//            mImageBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), Uri.parse(currentReport.getSelectedImage()));
-//            sharedImage.setImageBitmap(mImageBitmap);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         String selectedImage = currentReport.getSelectedImage();
         if(!selectedImage.equals("")) {
             sharedImage.setImageURI(Uri.parse(selectedImage));
+            sharedImage.setRotation(currentReport.getImageRotation());
         }
 
     }
@@ -168,11 +182,10 @@ public class PostReportFragment extends Fragment {
     }
 
     private void initBackButton() {
-        backButton = fragmentView.findViewById(R.id.back_button);
+        backButton = fragmentView.findViewById(R.id.back_btn);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                goBackToMainActivity();
                 getActivity().finish();
             }
         });
@@ -183,26 +196,6 @@ public class PostReportFragment extends Fragment {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
-
-    /*private void getAllPermissions() {
-        ActivityCompat.requestPermissions(getActivity(), PERMISSIONS, PERMISSIONS_REQ_CODE);
-    }
-
-    private boolean hasAllPermissions() {
-        for(int i=0 ; i<PERMISSIONS.length ; i++) {
-            String permissionToCheck = PERMISSIONS[i];
-            if(!hasPermission(permissionToCheck)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean hasPermission(String permissionToCheck) {
-        int permissionResult = ActivityCompat.checkSelfPermission(getActivity(), permissionToCheck);
-
-        return permissionResult == PackageManager.PERMISSION_GRANTED;
-    }*/
 
     //taken from: https://developer.android.com/guide/topics/ui/controls/spinner
     private void initTypeSpinner() {
@@ -236,9 +229,6 @@ public class PostReportFragment extends Fragment {
     }
 
     private void updateCurrentReport(int id) {
-        String nameString = name.getText().toString();
-        long itemId = itemSelected.getItemId();
-        String reportString = reportText.getText().toString();
         geoPoint = mService.getCurrentLatLng();
 
         postManager.setCurrentReport(name.getText().toString(),
@@ -246,64 +236,33 @@ public class PostReportFragment extends Fragment {
                 reportText.getText().toString(),
                 geoPoint);
         if(id == R.id.btn_submit) {
+            if(checkInput())
             postManager.saveCurrentReportToDatabase(getActivity(), new CallbacksHandler<Uri>() {
                 @Override
                 public void onCallback(Uri callbackObject) {
-                    Intent intent = new Intent(getActivity(), WatchReportActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                    goBackToMainActivity();
                 }
             });
         }
-//        switch (id) {
-//            case R.id.btn_submit:
-//                if(postManager.setCurrentReportBeforeSubmit(nameString, itemId, reportString, currentLatLng)) {
-//                    postManager.saveCurrentReportToDatabase();
-//                    //TODO
-//                } else {
-//                    Toast.makeText(getActivity(), "missing fields", Toast.LENGTH_SHORT);
-//                }
-//                break;
-//            case R.id.btn_upload_photo:
-//                postManager.setCurrentReport(name.getText().toString(),
-//                        itemSelected.getItemId(),
-//                        reportText.getText().toString(),
-//                        currentLatLng);
-//                break;
-//            default:
-//                break;
-//        }
 
     }
 
-    /*private void startLocationService() {
-        if(!isLocationServiceRunning()) {
-            Intent serviceIntent = new Intent(getActivity(), LocationService.class);
-            Log.d(TAG, "startLocationService: calling: " + getActivity().toString());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getActivity().startForegroundService(serviceIntent);
-                Log.d(TAG, "startLocationService: startForegroundService ");
-
-            } else {
-                getActivity().startService(serviceIntent);
-                Log.d(TAG, "startLocationService: startService ");
-
-            }
+    private boolean checkInput() {
+        boolean valid = true;
+        Report currentReport = postManager.getCurrentReport();
+        if(TextUtils.isEmpty(currentReport.getName())) {
+            name.setError("Required");
+            valid = false;
         }
+
+        if(!TextUtils.isEmpty(currentReport.getReportText()) ||
+                !TextUtils.isEmpty(currentReport.getSelectedImage())) {
+        } else {
+            errorText.setText("A report must contain a text or a photo");
+            valid = false;
+        }
+        return valid;
     }
-
-    private boolean isLocationServiceRunning() {
-        Log.d(TAG, "isLocationServiceRunning: called");
-        ActivityManager activityManager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
-            for(ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE)) {
-            if("liveReports.utils.LocationService".equals(serviceInfo.service.getClassName())) {
-                Log.d(TAG, "isLocationServiceRunning: already runnning");
-                return true;
-            }
-        }
-        Log.d(TAG, "isLocationServiceRunning: not running");
-        return false;
-    }*/
 
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection connection = new ServiceConnection() {

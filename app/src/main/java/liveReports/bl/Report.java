@@ -1,9 +1,9 @@
 package liveReports.bl;
 
-import android.location.Location;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.IgnoreExtraProperties;
@@ -13,34 +13,27 @@ import java.util.Date;
 
 @IgnoreExtraProperties
 //ignoring extra fields retrieved by a query
-public class Report {
+public class Report implements Parcelable {
 
     private static final String TAG = "Report";
     private String name;
     private String reportText;
-    private @ServerTimestamp Date timestamp;
-    //if timestamp == null, firestore automatically insert timestamp
-    public enum Type {Weather, SafetyHazard, Fire, Violence, Accident, PublicEvent, Other}
+    private @ServerTimestamp Date timestamp;//if timestamp == null,
+                                            // firestore automatically insert timestamp
+    public enum Type {WEATHER, SAFETY_HAZARD, FIRE, VIOLENCE, ACCIDENT, PUBLIC_EVENT, OTHER}
     private Type type;
     private String selectedImage;
-    private GeoPoint geoPoint;
-
-    public String getImageDownloadUrl() {
-        return imageDownloadUrl;
-    }
-
-    public void setImageDownloadUrl(String imageDownloadUrl) {
-        this.imageDownloadUrl = imageDownloadUrl;
-    }
-
     private String imageDownloadUrl;
+    private float imageRotation;
+    private GeoPoint geoPoint;
 
 
     public Report() {
         name = "";
         reportText = "";
-        type = Type.Weather;
+        type = Type.WEATHER;
         selectedImage = "";
+        imageDownloadUrl = "";
     }
 
     public Report(String name, String reportText, GeoPoint geoPoint) {
@@ -106,6 +99,65 @@ public class Report {
         this.selectedImage = selectedImage;
     }
 
+    public String getImageDownloadUrl() {
+        return imageDownloadUrl;
+    }
+
+    public void setImageDownloadUrl(String imageDownloadUrl) {
+        this.imageDownloadUrl = imageDownloadUrl;
+    }
+
+    @Exclude
+    public float getImageRotation() {
+        return imageRotation;
+    }
+
+    public void setImageRotation(float imageRotation) {
+        this.imageRotation = imageRotation;
+    }
+
+    //read
+    protected Report(Parcel in) {
+        name = in.readString();
+        reportText = in.readString();
+        timestamp = new Date(in.readLong());
+        type = Type.valueOf(in.readString());
+        selectedImage = in.readString();
+        imageDownloadUrl = in.readString();
+        imageRotation = in.readFloat();
+        geoPoint = new GeoPoint(in.readDouble(), in.readDouble());
+    }
+
+    public static final Creator<Report> CREATOR = new Creator<Report>() {
+        @Override
+        public Report createFromParcel(Parcel in) {
+            return new Report(in);
+        }
+
+        @Override
+        public Report[] newArray(int size) {
+            return new Report[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(name);
+        parcel.writeString(reportText);
+        parcel.writeLong(timestamp.getTime());
+        parcel.writeString(this.type.name());
+        parcel.writeString(selectedImage);
+        parcel.writeString(imageDownloadUrl);
+        parcel.writeFloat(imageRotation);
+        parcel.writeDouble(geoPoint.getLatitude());
+        parcel.writeDouble(geoPoint.getLongitude());
+    }
+
     @Override
     public String toString() {
         return "Report{" +
@@ -113,6 +165,8 @@ public class Report {
                 ", reportText='" + reportText + '\'' +
                 ", timestamp=" + timestamp +
                 ", type=" + type +
+                ", selectedImage='" + selectedImage + '\'' +
+                ", imageDownloadUrl='" + imageDownloadUrl + '\'' +
                 ", geoPoint=" + geoPoint +
                 '}';
     }

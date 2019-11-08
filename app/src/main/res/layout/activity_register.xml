@@ -8,12 +8,17 @@
     android:background="@drawable/background_style"
     tools:context="liveReports.activities.LoginActivity">
 
+    <Button
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_back"
+        android:id="@+id/cancel_register"/>
+
     <ImageView
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:src="@drawable/logo2"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="50dp"/>
+        android:layout_gravity="center_horizontal"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,7 +29,9 @@
         <TextView
             android:id="@+id/status"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent" />
+            android:layout_width="match_parent"
+            android:textColor="@color/colorAccent"
+            android:textSize="15sp"/>
 
         <EditText
             android:id="@+id/txt_email"
@@ -32,9 +39,10 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:inputType="textEmailAddress"
-            android:hint="@string/email_address_hint"
-            android:textSize="20sp"
-            android:layout_margin="25dp"/>
+            android:hint="email address"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"/>
 
         <EditText
             android:id="@+id/txt_password"
@@ -42,28 +50,29 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:inputType="textPassword"
-            android:hint="@string/password_hint"
-            android:textSize="20sp"
-            android:layout_margin="25dp"/>
+            android:hint="password"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"/>
 
-        <Button
-            android:id="@+id/btn_sign_in"
+        <EditText
+            android:id="@+id/txt_repeat_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/log_in"
-            android:textSize="20sp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"/>
+            android:maxLines="1"
+            android:inputType="textPassword"
+            android:hint="Repeat Password"
+            android:textSize="15sp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"/>
 
         <Button
             android:id="@+id/btn_Register"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/register_new_account"
-            android:textAllCaps="false"
+            android:text="Register"
             android:textSize="15sp"
             android:layout_marginLeft="30dp"
-            android:background="@android:color/transparent"
             android:layout_marginRight="30dp"/>
 
     </LinearLayout>

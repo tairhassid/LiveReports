@@ -2,6 +2,7 @@ package liveReports.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
@@ -47,19 +48,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Log.d(TAG, "onCreate: ");
-
-    }
-
-
-
-    public void moveToMapFragment() {
-        MapFragment mapFragment = new MapFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, mapFragment)
-                .commit();
-
-        currentFragment = mapFragment;
     }
 
     @Override
@@ -69,24 +57,6 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d(TAG, "onRequestPermissionsResult: ");
         currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        locationPermissionGranted = false;
-//        Log.d(TAG, "onRequestPermissionsResult: before if");
-//        if (requestCode == PERMISSION_REQ_ACCESS_FINE_LOCATION) {
-//            if (grantResults.length > 0) {
-//                for (int i = 0; i < grantResults.length; i++) {
-//                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-//                        locationPermissionGranted = false;
-//                        return;
-//                    }
-//                }
-//                locationPermissionGranted = true;
-//                Log.d(TAG, "onRequestPermissionsResult: calling fused");
-////                getLastKnownLocation();
-//                initMap();
-//            } else {
-//                Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
-//            }
-//        }
     }
 
 

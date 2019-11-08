@@ -2,6 +2,7 @@ package liveReports.data;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -71,6 +72,8 @@ public class ReportData {
                     Log.d(TAG, "onComplete: success");
                     if(!report.getSelectedImage().equals("")) {
                         storeImage(context, report, callbacksHandler);
+                    } else {
+                        callbacksHandler.onCallback(null);
                     }
                 }
             }
@@ -83,8 +86,12 @@ public class ReportData {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(
                     context.getContentResolver(),
                     Uri.parse(report.getSelectedImage()));
+            Byte[] imageBytes;
+            Matrix m = new Matrix();
+            m.postRotate(report.getImageRotation());
+            bitmap = Bitmap.createBitmap(bitmap,0,0, bitmap.getWidth(), bitmap.getHeight(), m, true);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
             byte[] data = baos.toByteArray();
 
             UploadTask uploadTask = photoStorageRef.putBytes(data);
@@ -141,6 +148,7 @@ public class ReportData {
     public void getReportsWithinArea(GeoPoint cameraPos, double wantedDif, final CallbacksHandler<List<Report>> callbacksHandler) {
         CollectionReference collectionRef = db.collection("reports");
 
+        //inspired by https://stackoverflow.com/questions/55959542/best-way-to-load-markers-from-firestore
         Query markers = collectionRef
                 .whereGreaterThanOrEqualTo(
                         "geoPoint",
@@ -158,18 +166,8 @@ public class ReportData {
                 if(task.isSuccessful()) {
                     Log.d(TAG, "onComplete: task successful");
                     List<Report> reports = new ArrayList<>();
-                    Log.d(TAG, "onComplete: " + task.getResult());
                     for(DocumentSnapshot document : task.getResult()) {
-                        Log.d(TAG, "onComplete: in loop");
                         Report report = document.toObject(Report.class);
-//                        Report report = new Report();
-//                        report.setName((String) document.get("name"));
-//                        report.setImageDownloadUrl((String) document.get("imageDownloadUrl"));
-//                        String reportType = (String) document.get("type");
-////                        report.setType(Report.Type.valueOf(reportType));
-//                        report.setLatLng(new LatLng((double)document.get("latitude"), (double)document.get("longitude")));
-//                        report.setReportText((String) document.get("reportText"));
-//                        report.setTimestamp((Date) document.get("timestamp"));
                         Log.d(TAG, "onComplete: " + report);
                         reports.add(report);
                     }

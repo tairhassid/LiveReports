@@ -8,46 +8,45 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/gallery_relativeLayout">
 
-
-            <include layout="@layout/snippet_top_gallerytoolbar" />
+            <include layout="@layout/general_app_bar" />
 
         </RelativeLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:weightSum="100"
-            android:orientation="vertical"
             android:layout_below="@id/gallery_relativeLayout"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp">
 
-            <RelativeLayout
+            <include
+                android:id="@+id/image_preview_layout"
+                layout="@layout/snippet_general_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/image_border"
-                android:layout_weight="40">
+                android:layout_centerHorizontal="true"/>
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/image_view_preview"
-                android:layout_centerInParent="true"
-                android:layout_margin="25dp"
-                android:src="@drawable/image_icon" />
-
-            </RelativeLayout>
-
+            <Button
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:id="@+id/rotate"
+                android:layout_below="@id/image_preview_layout"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/ic_rotate"
+                android:visibility="gone" />
 
             <Button
                 android:layout_width="190dp"
                 android:layout_height="wrap_content"
                 android:text="Choose from gallery"
-                android:layout_gravity="center_horizontal"
+                android:layout_below="@id/rotate"
+                android:layout_centerHorizontal="true"
                 android:id="@+id/btn_add_image"
                 android:layout_marginTop="20dp"/>
 
@@ -55,23 +54,12 @@
                 android:layout_width="190dp"
                 android:layout_height="wrap_content"
                 android:text="Take a photo"
-                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="20dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/btn_add_image"
                 android:id="@+id/btn_take_photo"/>
 
-<!--            <GridView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:layout_weight="60"-->
-<!--                android:id="@+id/grid_view_gallery"-->
-<!--                android:numColumns="5"-->
-<!--                android:verticalSpacing="1dp"-->
-<!--                android:horizontalSpacing="1dp"-->
-<!--                android:stretchMode="none"-->
-<!--                android:gravity="center"-->
-<!--                android:layout_marginTop="1dp"/>-->
-
-        </LinearLayout>
+        </RelativeLayout>
     </RelativeLayout>
 
 

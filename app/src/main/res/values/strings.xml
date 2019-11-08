@@ -4,6 +4,15 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="share_report_headline">Share Your Report</string>
+    <string name="live_reports">Live Reports</string>
+    <string name="log_out">Log Out</string>
+    <string name="log_in">Log In</string>
+    <string name="register_new_account">Register new account</string>
+    <string name="password_hint">Password</string>
+    <string name="email_address_hint">email address</string>
+    <string name="post_fragment_headline">Share Your Report</string>
+    <string name="required">Required</string>
+    <string name="email_not_valid">Email address is not valid</string>
 
 
     <!-- TODO: Remove or change this placeholder text -->

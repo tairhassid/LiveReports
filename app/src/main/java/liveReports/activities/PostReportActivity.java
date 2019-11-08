@@ -1,5 +1,6 @@
 package liveReports.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -15,12 +16,6 @@ public class PostReportActivity extends AppCompatActivity {
 
     //constants
     private static final String TAG = "PostReportActivity";
-    private static final String[] PERMISSIONS = {
-            Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-    private static final int PERMISSIONS_REQ_CODE = 1;
 
     //variables
 
@@ -60,15 +55,8 @@ public class PostReportActivity extends AppCompatActivity {
     }
 
     public void moveToAddImageFragment() {
-//        OLDAddImageFragment addImageFragment = new OLDAddImageFragment();
-//        getSupportFragmentManager()
-//                .beginTransaction()
-//                .replace(R.id.post_container, addImageFragment)
-//                .commit();
-//
-//        currentFragment = addImageFragment;
-
         AddImageFragment addImageFragment = new AddImageFragment();
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.post_container, addImageFragment)
@@ -88,4 +76,9 @@ public class PostReportActivity extends AppCompatActivity {
         currentFragment = postReportFragment;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }

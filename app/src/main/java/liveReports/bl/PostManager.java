@@ -1,6 +1,7 @@
 package liveReports.bl;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -74,4 +75,5 @@ public class PostManager {
     public void initNewReport() {
         currentReport = new Report();
     }
+
 }

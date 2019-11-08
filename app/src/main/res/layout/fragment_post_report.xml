@@ -6,88 +6,86 @@
     tools:context="liveReports.ui.PostReportFragment"
     android:background="@drawable/background_style">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    <include layout="@layout/general_app_bar"
+        android:id="@+id/bar"/>
 
-    <include layout="@layout/layout_app_bar"/>
-
-    <RelativeLayout
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/layout_top"
-        android:padding="30dp">
+        android:layout_below="@+id/bar"
+        android:fillViewport="true">
 
-        <!--        <Button-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:text="click!"-->
-        <!--            android:id="@+id/button"-->
-        <!--            android:layout_alignParentEnd="true"/>-->
-
-        <EditText
-            android:id="@+id/name_edit_text"
-            android:layout_width="200dp"
-            android:layout_height="43dp"
-            android:textColor="#FF000000"
-            android:textSize="20sp"
-            android:hint="Reporter's name"/>
-
-        <Spinner
-            android:layout_width="150dp"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/name_edit_text"
-            android:id="@+id/type_spinner"/>
+            android:layout_below="@+id/bar"
+            android:padding="30dp">
 
 
-        <EditText
-            android:id="@+id/report_edit_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="type..."
-            android:layout_below="@+id/type_spinner"
-            android:textSize="20sp"/>
+            <EditText
+                android:id="@+id/name_edit_text"
+                android:layout_width="200dp"
+                android:layout_height="43dp"
+                android:hint="Reporter's name"
+                android:inputType="text"
+                android:lines="1"
+                android:maxLength="15"
+                android:maxLines="1"
+                android:textColor="#FF000000"
+                android:textSize="20sp" />
 
-        <ImageView
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_above="@id/btn_upload_photo"
-            android:id="@+id/sharedImage"/>
-        <!--            android:layout_below="@id/name_text"-->
+            <Spinner
+                android:id="@+id/type_spinner"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/name_edit_text" />
 
+            <EditText
+                android:id="@+id/report_edit_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/type_spinner"
+                android:layout_marginBottom="100dp"
+                android:hint="type..."
+                android:inputType="text"
+                android:maxLength="150"
+                android:maxLines="5"
+                android:textSize="20sp" />
 
-        <!--            android:layout_toRightOf="@+id/name_text"-->
+            <ImageView
+                android:id="@+id/shared_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/report_edit_text"
+                android:layout_centerHorizontal="true"
+                android:adjustViewBounds="true"
+                android:inputType="text" />
 
-<!--        <TextView-->
-<!--            android:id="@+id/name_text"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:padding="10dp"-->
-<!--            android:text="Reporter's name:"-->
-<!--            android:textColor="#FF000000"-->
-<!--            android:textSize="20sp" />-->
+            <Button
+                android:id="@+id/btn_upload_photo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_below="@id/shared_image"
+                android:background="@drawable/ic_camera" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Upload a photo"
-            android:id="@+id/btn_upload_photo"
-            android:layout_alignParentBottom="true"/>
+            <TextView
+                android:id="@+id/error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/btn_submit"
+                android:textColor="#F44336"
+                android:textSize="20sp" />
 
-        <Button
-            android:id="@+id/btn_submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:text="Submit" />
-    </RelativeLayout>
+            <Button
+                android:id="@+id/btn_submit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:text="Submit" />
+        </RelativeLayout>
 
-</LinearLayout>
-
-
-
-
+    </ScrollView>
 
 </RelativeLayout>

@@ -3,17 +3,16 @@ package liveReports.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -29,6 +28,7 @@ import java.util.Date;
 
 import liveReports.activities.PostReportActivity;
 import liveReports.bl.PostManager;
+import liveReports.bl.Report;
 import liveReports.livereports.R;
 import liveReports.utils.AddImagePermissions;
 
@@ -39,6 +39,7 @@ public class AddImageFragment extends Fragment {
     private static final String TAG = "AddImageFragment";
     private static final int IMAGE_PICK_CODE = 101;
     private static final int CAMERA_REQ_CODE = 102;
+    private static final String HEADLINE = "Add a Photo";
 
     private AddImagePermissions addImagePermissions;
     private View rootView;
@@ -46,7 +47,9 @@ public class AddImageFragment extends Fragment {
     private Button addImgBtn;
     private Button takePhotoBtn;
     private ImageView imageNext;
-    private PostManager postManager;
+    private TextView headlineText;
+    private Button rotateBtn;
+
     private String selectedImage;
     private String currentPhotoPath;
 
@@ -61,40 +64,53 @@ public class AddImageFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        Log.d(TAG, "onCreateView: ");
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_gallery, container, false);
 
         init();
-        postManager = PostManager.getInstance();
-//        Log.d(TAG, "onCreateView: " + postManager.getCurrentReport());
         return rootView;
     }
 
     private void init() {
         addImagePermissions = new AddImagePermissions(getActivity());
         imageView = rootView.findViewById(R.id.image_view_preview);
+        headlineText = rootView.findViewById(R.id.text_view_headline);
+
+        headlineText.setText(HEADLINE);
 
         initAddImgBtn();
         initTakePhotoBtn();
         initCloseImgView();
-        initImgNext();
+    }
+
+    private void initRotateBtn() {
+        rotateBtn = rootView.findViewById(R.id.rotate);
+        rotateBtn.setVisibility(View.VISIBLE);
+        rotateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                imageView.setRotation(imageView.getRotation() + 90);
+            }
+        });
     }
 
     private void initImgNext() {
         imageNext = rootView.findViewById(R.id.image_next);
+        imageNext.setVisibility(View.VISIBLE);
         imageNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                Log.d(TAG, "onClick: next");
-                PostManager.getInstance().getCurrentReport().setSelectedImage(selectedImage);
+                Report currentReport = PostManager.getInstance().getCurrentReport();
+                currentReport.setSelectedImage(selectedImage);
+                currentReport.setImageRotation(imageView.getRotation());
                 getFragmentManager().popBackStackImmediate();
             }
         });
     }
 
     private void initCloseImgView() {
-        ImageView close = rootView.findViewById(R.id.image_view_close_add_image);
+        Button close = rootView.findViewById(R.id.back_btn);
         close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -169,22 +185,14 @@ public class AddImageFragment extends Fragment {
 
         if(resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGE_PICK_CODE) {
-//                Log.d(TAG, "onActivityResult: " +data.getData());
-//                imageView.setImageURI(data.getData());
                 Uri imageUri = data.getData();
                 selectedImage = imageUri.toString();
                 Picasso.get().load(imageUri).fit().into(imageView);
-//                imageNext.setVisibility(View.VISIBLE);
             } else if (requestCode == CAMERA_REQ_CODE) {
-//                Log.d(TAG, "onActivityResult: photo taken");
-                imageView.setImageURI(Uri.parse(currentPhotoPath));
-                selectedImage = currentPhotoPath;
-
-//                Bundle extras = data.getExtras();
-//                Bitmap imageBitmap = (Bitmap) extras.get("data");
-//                imageView.setImageBitmap(imageBitmap);
+                Picasso.get().load(Uri.parse(currentPhotoPath)).fit().into(imageView);
             }
-            imageNext.setVisibility(View.VISIBLE);
+            initRotateBtn();
+            initImgNext();
         }
     }
 
