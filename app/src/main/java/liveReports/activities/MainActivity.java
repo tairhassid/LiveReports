@@ -59,7 +59,4 @@ public class MainActivity extends AppCompatActivity {
         currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-
-
-
 }

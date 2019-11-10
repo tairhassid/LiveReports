@@ -42,12 +42,11 @@ public class SplashScreenActivity extends AppCompatActivity {
         if(currentUser == null) {
             setSignInButton();
             setSkipButton();
+            setButtonsAnimation();
         } else {
             setButtonsVisibility();
         }
-
         setLogoAnimation();
-        setButtonsAnimation();
     }
 
     private void setButtonsVisibility() {

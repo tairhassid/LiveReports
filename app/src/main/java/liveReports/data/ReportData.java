@@ -5,12 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -28,15 +28,17 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import liveReports.bl.PostManager;
 import liveReports.bl.Report;
-import liveReports.livereports.R;
 import liveReports.utils.CallbacksHandler;
 
 public class ReportData {
@@ -168,12 +170,57 @@ public class ReportData {
                     List<Report> reports = new ArrayList<>();
                     for(DocumentSnapshot document : task.getResult()) {
                         Report report = document.toObject(Report.class);
-                        Log.d(TAG, "onComplete: " + report);
-                        reports.add(report);
+
+                        if(!deleteOldReport(report, document)) {
+                            Log.d(TAG, "onComplete: " + report);
+                            reports.add(report);
+                        }
                     }
                     callbacksHandler.onCallback(reports);
                 }
             }
         });
     }
+
+    //delete reports that were posted more than 24 hours ago
+    private boolean deleteOldReport(final Report report, DocumentSnapshot document) {
+        boolean returnValue = false;
+        if(isOlderThanADay(report)) {
+            final String imageName = document.getReference().getId();
+            document.getReference().delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "onSuccess: delete report " + report);
+                    if(!TextUtils.isEmpty(report.getImageDownloadUrl())) {
+                        deleteImage(imageName);
+                    }
+                }
+            });
+            return true;
+        }
+        return false;
+    }
+
+    private void deleteImage(final String imageName) {
+        StorageReference imageRef = storageReference.child(PATH + imageName);
+        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "onSuccess: delete image " + imageName);
+            }
+        });
+    }
+
+    private boolean isOlderThanADay(Report report) {
+        long cutoff = new Date().getTime() - TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
+        Date cut = new Date(cutoff);
+        Date reportTime = report.getTimestamp();
+
+        if(reportTime.before(cut)) {
+            return true;
+        }
+        return false;
+    }
+
 }
+

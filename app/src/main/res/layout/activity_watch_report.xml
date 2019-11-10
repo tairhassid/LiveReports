@@ -7,7 +7,14 @@
     tools:context="liveReports.activities.WatchReportActivity"
     android:background="@drawable/background_style">
 
-    <include layout="@layout/general_app_bar"/>
+    <include layout="@layout/general_app_bar"
+        android:id="@+id/bar"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/bar"
+        android:layout_centerInParent="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -18,6 +25,7 @@
         android:layout_marginLeft="10dp"
         android:id="@+id/rel_layout_watch_report"
         android:layout_marginRight="10dp">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -41,30 +49,8 @@
             android:layout_below="@id/text_view_time"
             android:layout_marginTop="10dp"/>
 
-<!--        <include android:id="@+id/layout_image_view"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_centerHorizontal="true"-->
-<!--            layout="@layout/snippet_general_image"/>-->
 
-
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:id="@+id/text_view_report"-->
-<!--            android:layout_marginTop="10dp"-->
-<!--            android:textSize="15sp"-->
-<!--            android:layout_below="@id/text_view_report_type"-->
-<!--            android:text="Getting colder, raining with lightning storms"/>-->
-
-<!--        <ImageView-->
-<!--            android:layout_width="300dp"-->
-<!--            android:layout_height="300dp"-->
-<!--            android:id="@+id/report_image"-->
-<!--            android:layout_marginTop="20dp"-->
-<!--            android:layout_below="@id/text_view_report"-->
-<!--            android:layout_centerInParent="true"/>-->
-
+    </RelativeLayout>
     </RelativeLayout>
 
 </RelativeLayout>

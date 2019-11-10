@@ -3,15 +3,20 @@ package liveReports.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,10 +24,12 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -35,13 +42,18 @@ import liveReports.utils.AddImagePermissions;
 
 public class AddImageFragment extends Fragment {
 
-
+    //consts
     private static final String TAG = "AddImageFragment";
     private static final int IMAGE_PICK_CODE = 101;
     private static final int CAMERA_REQ_CODE = 102;
     private static final String HEADLINE = "Add a Photo";
 
+    //vars
     private AddImagePermissions addImagePermissions;
+    private String selectedImage;
+    private String currentPhotoPath;
+
+    //ui vars
     private View rootView;
     private ImageView imageView;
     private Button addImgBtn;
@@ -49,10 +61,8 @@ public class AddImageFragment extends Fragment {
     private ImageView imageNext;
     private TextView headlineText;
     private Button rotateBtn;
-
-    private String selectedImage;
-    private String currentPhotoPath;
-
+    private ProgressBar progressBar;
+    private float totalRotation;
 
 
     @Override
@@ -74,9 +84,14 @@ public class AddImageFragment extends Fragment {
     private void init() {
         addImagePermissions = new AddImagePermissions(getActivity());
         imageView = rootView.findViewById(R.id.image_view_preview);
-        headlineText = rootView.findViewById(R.id.text_view_headline);
 
+        headlineText = rootView.findViewById(R.id.text_view_headline);
         headlineText.setText(HEADLINE);
+
+        progressBar = rootView.findViewById(R.id.progress_bar_image);
+        progressBar.setVisibility(View.GONE);
+
+        PostManager.getInstance().getCurrentReport().setSelectedImage("");
 
         initAddImgBtn();
         initTakePhotoBtn();
@@ -90,6 +105,8 @@ public class AddImageFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 imageView.setRotation(imageView.getRotation() + 90);
+                Log.d(TAG, "onClick: imageview: " + imageView.getRotation());
+                Log.d(TAG, "onClick: total: " +totalRotation);
             }
         });
     }
@@ -103,11 +120,54 @@ public class AddImageFragment extends Fragment {
 //                Log.d(TAG, "onClick: next");
                 Report currentReport = PostManager.getInstance().getCurrentReport();
                 currentReport.setSelectedImage(selectedImage);
-                currentReport.setImageRotation(imageView.getRotation());
+
+                currentReport.setImageRotation(imageView.getRotation() + totalRotation);
                 getFragmentManager().popBackStackImmediate();
             }
         });
     }
+
+    private void checkRotation(Uri imgUri) {
+
+        try {
+            InputStream input = getContext().getContentResolver().openInputStream(imgUri);
+            ExifInterface ei;
+            if(Build.VERSION.SDK_INT > 23) {
+                ei = new ExifInterface(input);
+            } else {
+                ei = new ExifInterface(imgUri.getPath());
+            }
+//            Log.d(TAG, "checkRotation: file name " + selectedImage.getName());
+//            ExifInterface ei = new ExifInterface(selectedImage.getName());
+
+            int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
+
+            float rotation;
+            switch(orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotation = 90;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotation = 180;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotation = 270;
+                    break;
+
+                case ExifInterface.ORIENTATION_NORMAL:
+                default:
+                    rotation = 0;
+            }
+            Log.d(TAG, "checkRotation: " + rotation);
+            totalRotation = rotation;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void initCloseImgView() {
         Button close = rootView.findViewById(R.id.back_btn);
@@ -184,18 +244,32 @@ public class AddImageFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(resultCode == Activity.RESULT_OK) {
+            progressBar.setVisibility(View.VISIBLE);
+            Uri imageUri = null;
             if (requestCode == IMAGE_PICK_CODE) {
-                Uri imageUri = data.getData();
-                selectedImage = imageUri.toString();
-                Picasso.get().load(imageUri).fit().into(imageView);
+                imageUri = data.getData();
             } else if (requestCode == CAMERA_REQ_CODE) {
-                Picasso.get().load(Uri.parse(currentPhotoPath)).fit().into(imageView);
+                imageUri = Uri.parse(currentPhotoPath);
+                checkRotation(imageUri);
             }
+            Picasso.get().load(imageUri).fit().into(imageView, new Callback() {
+                @Override
+                public void onSuccess() {
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
+            selectedImage = imageUri.toString();
             initRotateBtn();
             initImgNext();
         }
     }
 
+    File photoFile;
     //taken from https://developer.android.com/training/camera/photobasics
     private void dispatchTakePictureIntent() {
         if(addImagePermissions.hasPermission(Manifest.permission.CAMERA)) {
@@ -204,7 +278,7 @@ public class AddImageFragment extends Fragment {
             // Ensure that there's a camera activity to handle the intent
             if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
                 // Create the File where the photo should go
-                File photoFile = null;
+//                File photoFile = null;
                 try {
                     photoFile = createImageFile();
                 } catch (IOException ex) {

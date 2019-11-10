@@ -9,24 +9,21 @@
     <include layout="@layout/general_app_bar"
         android:id="@+id/bar"/>
 
-    <ScrollView
-        android:id="@+id/scroll"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/bar"
-        android:fillViewport="true">
+        android:layout_below="@id/bar"
+        android:padding="30dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/bar"
-            android:padding="30dp">
-
+            android:id="@+id/details_layout">
 
             <EditText
                 android:id="@+id/name_edit_text"
                 android:layout_width="200dp"
-                android:layout_height="43dp"
+                android:layout_height="wrap_content"
                 android:hint="Reporter's name"
                 android:inputType="text"
                 android:lines="1"
@@ -37,30 +34,33 @@
 
             <Spinner
                 android:id="@+id/type_spinner"
-                android:layout_width="150dp"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/name_edit_text" />
+                android:layout_below="@id/name_edit_text"/>
 
             <EditText
                 android:id="@+id/report_edit_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/type_spinner"
-                android:layout_marginBottom="100dp"
                 android:hint="type..."
-                android:inputType="text"
+                android:inputType="textMultiLine"
                 android:maxLength="150"
                 android:maxLines="5"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                android:layout_below="@id/type_spinner"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/rel_layout">
 
             <ImageView
                 android:id="@+id/shared_image"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/report_edit_text"
-                android:layout_centerHorizontal="true"
-                android:adjustViewBounds="true"
-                android:inputType="text" />
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:scaleType="centerCrop"/>
 
             <Button
                 android:id="@+id/btn_upload_photo"
@@ -75,17 +75,19 @@
                 android:layout_height="wrap_content"
                 android:layout_above="@id/btn_submit"
                 android:textColor="#F44336"
-                android:textSize="20sp" />
+                android:textSize="15sp" />
 
             <Button
                 android:id="@+id/btn_submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentBottom="true"
-                android:text="Submit" />
+                android:layout_below="@id/shared_image"
+                android:text="Submit"
+                android:textSize="15sp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/custom_button"/>
         </RelativeLayout>
-
-    </ScrollView>
+    </RelativeLayout>
 
 </RelativeLayout>

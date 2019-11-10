@@ -1,14 +1,9 @@
 package liveReports.ui;
 
-import android.content.Context;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,20 +46,29 @@ import liveReports.utils.LocationHelper;
 
 public class MapFragment extends Fragment {
 
+    //constants
     private static final String TAG = "MapFragment";
     private static final float ZOOM = 15f;
-    public static final double DIF = 0.005;
-    private GoogleMap mMap;
-    private boolean locationPermissionGranted;
+    private static final double DIF = 0.005;
     private static final int PERMISSION_REQ_ACCESS_FINE_LOCATION = 9003;
-    private LocationHelper locationHelper;
+
+    //ui variables
     private FloatingActionButton fab;
-    private ReportData reportData;
-    private GeoPoint currentCameraPos;
-    private Map<Marker, Report> markerReportMap;
     private View rootView;
     private ImageView menuView;
+    private ProgressBar progressBar;
+
+    //variables
+    private boolean locationPermissionGranted;
+    private boolean hasLatLng;
+    private Map<Marker, Report> markerReportMap;
+    private LocationHelper locationHelper;
+    private ReportData reportData;
+
     private FirebaseAuth mAuth;
+    private GeoPoint currentCameraPos;
+    private GoogleMap mMap;
+
 
 
     @Override
@@ -68,7 +77,6 @@ public class MapFragment extends Fragment {
 
         reportData = new ReportData();
         markerReportMap = new HashMap<>();
-        Log.d(TAG, "onCreate: called");
         locationHelper = new LocationHelper(getActivity());
         mAuth = FirebaseAuth.getInstance();
     }
@@ -76,9 +84,10 @@ public class MapFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView: called");
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_map, container, false);
+
+        progressBar = rootView.findViewById(R.id.progress_bar_image);
 
         initFragment();
         getLocationPermission();
@@ -95,13 +104,12 @@ public class MapFragment extends Fragment {
         menuView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "onClick: menuView");
                 showPopup(view);
             }
         });
     }
 
-    public void showPopup(View view) {
+    private void showPopup(View view) {
         PopupMenu popupMenu = new PopupMenu(getActivity(), view);
         popupMenu.inflate(R.menu.map_fragment_menu);
         Menu menu = popupMenu.getMenu();
@@ -110,20 +118,17 @@ public class MapFragment extends Fragment {
             MenuItem login = menu.getItem(1);
             logout.setVisible(false);
             login.setVisible(true);
-            //TODO need to change the switch case!!!
         }
         popupMenu.show();
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                Log.d(TAG, "onMenuItemClick: ");
                 switch (menuItem.getItemId()) {
                     case R.id.log_out:
                         signOut();
                         return true;
 
                     case R.id.log_in:
-                        Log.d(TAG, "onMenuItemClick: going to login page");
                         moveToLoginActivity();
                         return true;
 
@@ -150,8 +155,11 @@ public class MapFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(checkLoggedIn()) {
-                    Intent intent = new Intent(getActivity(), PostReportActivity.class);
-                    startActivity(intent);
+                    if(hasLatLng) {
+                        moveToPostReportActivity();
+                    } else {
+                        Toast.makeText(getActivity(), "Location has to be available in order to post reports", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(getActivity(), "User must be logged in to share reports", Toast.LENGTH_SHORT).show();
                 }
@@ -159,13 +167,23 @@ public class MapFragment extends Fragment {
         });
     }
 
+    private void moveToPostReportActivity() {
+        Intent intent = new Intent(getActivity(), PostReportActivity.class);
+        Bundle bundle = ActivityOptions.makeCustomAnimation(
+                getActivity(),
+                R.anim.slide_enter_diagonal,
+                R.anim.slide_exit_diagonal)
+                .toBundle();
+        startActivity(intent, bundle);
+    }
+
     private boolean checkLoggedIn() {
         FirebaseAuth auth  = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
-        if(user != null) {
-            return true;
+        if (user == null) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     private void initFragment() {
@@ -174,7 +192,7 @@ public class MapFragment extends Fragment {
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
-                Log.d(TAG, "onMapReady: ");
+                currentCameraPos = new GeoPoint(-33.852, 151.211);
                 mMap = googleMap;
                 setOnCameraMoveListener();
                 setOnMarkerClickListener();
@@ -183,22 +201,30 @@ public class MapFragment extends Fragment {
     }
 
     private void setOnMarkerClickListener() {
-        Log.d(TAG, "setOnMarkerClickListener: called");
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 Report report = markerReportMap.get(marker);
                 Log.d(TAG, "onMarkerClick: report" + report);
-                Intent intent = new Intent(getActivity(), WatchReportActivity.class);
-                intent.putExtra("report", report);
-                startActivity(intent);
+                moveToWatchReportActivity(report);
                 return true;
             }
         });
     }
 
+    private void moveToWatchReportActivity(Report report) {
+        Intent intent = new Intent(getActivity(), WatchReportActivity.class);
+        intent.putExtra("report", report);
+
+        Bundle bundle = ActivityOptions.makeCustomAnimation(
+                getActivity(),
+                R.anim.slide_enter_right,
+                R.anim.slide_exit_left)
+                .toBundle();
+        startActivity(intent, bundle);
+    }
+
     private void setOnCameraMoveListener() {
-        Log.d(TAG, "setOnCameraMoveListener: ");
         mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
@@ -206,7 +232,6 @@ public class MapFragment extends Fragment {
                         new GeoPoint(mMap.getCameraPosition().target.latitude,
                                 mMap.getCameraPosition().target.longitude);
                 if(distance(center, currentCameraPos) >= DIF) {
-                    Log.d(TAG, "onCameraMove: center=" +center);
                     getReportsWithinArea();
                     currentCameraPos = center;
                 }
@@ -219,12 +244,13 @@ public class MapFragment extends Fragment {
 
             @Override
             public void onCallback(List<Report> callbackObject) {
-                Log.d(TAG, "onCallback: from getReportsWithinArea");
+                Log.d(TAG, "getReportsWithinArea onCallback");
                 for(Report report : callbackObject) {
                     Marker marker = mMap.addMarker(new MarkerOptions().position(
                             new LatLng(report.getGeoPoint().getLatitude(),report.getGeoPoint().getLongitude())));
                     markerReportMap.put(marker, report);
                 }
+                progressBar.setVisibility(View.GONE);
             }
         });
     }
@@ -237,13 +263,7 @@ public class MapFragment extends Fragment {
 
     }
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-    }
-
     private void getLocationPermission() {
-        Log.d(TAG, "getLocationPermission: called");
         if(locationHelper.getLocationPermission()) {
             locationPermissionGranted = true;
             initMap();
@@ -256,52 +276,53 @@ public class MapFragment extends Fragment {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         locationPermissionGranted = false;
-        Log.d(TAG, "onRequestPermissionsResult: before if");
         if (requestCode == PERMISSION_REQ_ACCESS_FINE_LOCATION) {
             if (grantResults.length > 0) {
                 for (int i = 0; i < grantResults.length; i++) {
                     if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                         locationPermissionGranted = false;
+                        Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
                         return;
                     }
                 }
                 locationPermissionGranted = true;
-                Log.d(TAG, "onRequestPermissionsResult: calling fused");
                 initMap();
-            } else {
-                Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     private void initMap() {
-        Log.d(TAG, "initMap: called");
         if(locationPermissionGranted) {
-            Log.d(TAG, "initMap: locationPermissionGranted is true");
             getCurrentLocation();
         }
     }
 
     private void getCurrentLocation() {
         if(locationPermissionGranted) {
-            Log.d(TAG, "getCurrentLocation: ");
             locationHelper.setLatLng(new CallbacksHandler<LatLng>() {
 
                 @Override
                 public void onCallback(LatLng callbackObject) {
-                    Log.d(TAG, "onCallback: latlng = " + callbackObject);
-                    mMap.setMyLocationEnabled(true);
-                    moveCamera(callbackObject, ZOOM);
-                    getReportsWithinArea();
+                    Log.d(TAG, "onCallback: from setLatLng");
+                    if(callbackObject != null) {
+                        mMap.setMyLocationEnabled(true);
+                        moveCamera(callbackObject);
+                        getReportsWithinArea();
+                        hasLatLng = true;
+                    } else {
+                        Toast.makeText(getContext(), "Couldn't get current location", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                        hasLatLng = false;
+                    }
 
                 }
             });
         }
     }
 
-    private void moveCamera(LatLng latLng, float zoom) {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        Log.d(TAG, "moveCamera: ");
+    private void moveCamera(LatLng latLng) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM));
         currentCameraPos = new GeoPoint(latLng.latitude, latLng.longitude);
     }
 

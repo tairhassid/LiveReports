@@ -24,8 +24,8 @@ public class LocationService extends Service {
 
     private final IBinder binder = new LocalBinder();
     private FusedLocationProviderClient fusedLocationProviderClient;
-    private final long INTERVAL = 4000;
-    private final long FASTEST_INTERVAL = 2000;
+    private final long INTERVAL = 7000;
+    private final long FASTEST_INTERVAL = 4000;
     private GeoPoint geoPoint;
 
     @Nullable

@@ -1,5 +1,6 @@
 package liveReports.ui;
 
+import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -31,6 +33,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.firestore.GeoPoint;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 
@@ -133,8 +137,8 @@ public class PostReportFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        getActivity().unbindService(connection);
-        mBound = false;
+//        getActivity().unbindService(connection);
+//        mBound = false;
     }
 
     @Override
@@ -153,9 +157,16 @@ public class PostReportFragment extends Fragment {
         reportText.setText(currentReport.getReportText());
 
         String selectedImage = currentReport.getSelectedImage();
-        if(!selectedImage.equals("")) {
+        if(!TextUtils.isEmpty(selectedImage)) {
+//            setImagePreview(selectedImage);
             sharedImage.setImageURI(Uri.parse(selectedImage));
             sharedImage.setRotation(currentReport.getImageRotation());
+            sharedImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                }
+            });
         }
 
     }
@@ -195,6 +206,7 @@ public class PostReportFragment extends Fragment {
         Intent intent = new Intent(getActivity(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        getActivity().finish();
     }
 
     //taken from: https://developer.android.com/guide/topics/ui/controls/spinner
@@ -229,22 +241,23 @@ public class PostReportFragment extends Fragment {
     }
 
     private void updateCurrentReport(int id) {
-        geoPoint = mService.getCurrentLatLng();
+        if(mBound) {
+            geoPoint = mService.getCurrentLatLng();
 
-        postManager.setCurrentReport(name.getText().toString(),
-                itemSelected.getItemId(),
-                reportText.getText().toString(),
-                geoPoint);
-        if(id == R.id.btn_submit) {
-            if(checkInput())
-            postManager.saveCurrentReportToDatabase(getActivity(), new CallbacksHandler<Uri>() {
-                @Override
-                public void onCallback(Uri callbackObject) {
-                    goBackToMainActivity();
-                }
-            });
+            postManager.setCurrentReport(name.getText().toString(),
+                    itemSelected.getItemId(),
+                    reportText.getText().toString(),
+                    geoPoint);
+            if (id == R.id.btn_submit) {
+                if (checkInput())
+                    postManager.saveCurrentReportToDatabase(getActivity(), new CallbacksHandler<Uri>() {
+                        @Override
+                        public void onCallback(Uri callbackObject) {
+                            goBackToMainActivity();
+                        }
+                    });
+            }
         }
-
     }
 
     private boolean checkInput() {
@@ -307,5 +320,13 @@ public class PostReportFragment extends Fragment {
         private long getItemId() {
             return itemId;
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+        getActivity().unbindService(connection);
+        mBound = false;
     }
 }

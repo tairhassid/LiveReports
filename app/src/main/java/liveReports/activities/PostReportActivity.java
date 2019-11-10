@@ -81,4 +81,10 @@ public class PostReportActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_enter_diagonal, R.anim.slide_exit_diagonal);
+    }
 }

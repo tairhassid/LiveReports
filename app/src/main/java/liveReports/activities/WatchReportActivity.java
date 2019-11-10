@@ -2,6 +2,7 @@ package liveReports.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,9 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import liveReports.bl.PostManager;
@@ -32,8 +35,7 @@ public class WatchReportActivity extends AppCompatActivity {
     private RelativeLayout relativeLayout;
     private TextView textViewReportBody;
     private ImageView imageView;
-    //report text
-    //image view
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,7 @@ public class WatchReportActivity extends AppCompatActivity {
 
         relativeLayout = findViewById(R.id.rel_layout_watch_report);
 
+
         if(!TextUtils.isEmpty(report.getReportText())) {
             createReportBody();
         }
@@ -65,6 +68,11 @@ public class WatchReportActivity extends AppCompatActivity {
         }
         initBackButton();
     }
+
+//    @Override
+//    public void finish() {
+//        super.finish();
+//    }
 
     private String parseReportType() {
         String typeName = report.getType().name();
@@ -103,7 +111,7 @@ public class WatchReportActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.setMargins(0, 20, 0, 0);
 
-        if(report.getReportText() != null) {
+        if(!TextUtils.isEmpty(report.getReportText())) {
             //the image should be below report's body, the body's id has to be set programmatically
             layoutParams.addRule(RelativeLayout.BELOW, textViewReportBody.getId());
         } else {
@@ -117,7 +125,21 @@ public class WatchReportActivity extends AppCompatActivity {
         relativeLayout.addView(view);
 
         ImageView imageView = findViewById(R.id.image_view_preview);
-        Picasso.get().load(report.getImageDownloadUrl()).into(imageView);
+        progressBar = findViewById(R.id.progress_bar_image);
+        progressBar.setVisibility(View.VISIBLE);
+
+        Picasso.get().load(report.getImageDownloadUrl()).into(imageView, new Callback() {
+            @Override
+            public void onSuccess() {
+                progressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onError(Exception e) {
+
+            }
+        });
+
     }
 
 
@@ -146,6 +168,8 @@ public class WatchReportActivity extends AppCompatActivity {
                 Intent intent = new Intent(WatchReportActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_enter_left, R.anim.slide_exit_right);
+                finish();
             }
         });
     }
