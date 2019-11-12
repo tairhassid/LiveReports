@@ -5,7 +5,8 @@ import android.app.Activity;
 import android.content.Intent;
 import androidx.exifinterface.media.ExifInterface;
 
-import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,9 +26,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +37,7 @@ import liveReports.bl.PostManager;
 import liveReports.bl.Report;
 import liveReports.livereports.R;
 import liveReports.utils.AddImagePermissions;
+import liveReports.utils.RotateBitmap;
 
 
 public class AddImageFragment extends Fragment {
@@ -55,6 +54,7 @@ public class AddImageFragment extends Fragment {
     private String currentPhotoPath;
     private File photoFile;
     private float totalRotation;
+    private RotateBitmap rotateBitmap;
 
     //ui vars
     private View rootView;
@@ -72,7 +72,7 @@ public class AddImageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        rootView = inflater.inflate(R.layout.fragment_gallery, container, false);
+        rootView = inflater.inflate(R.layout.fragment_add_image, container, false);
 
         init();
         return rootView;
@@ -109,7 +109,7 @@ public class AddImageFragment extends Fragment {
     }
 
     private void initImgNext() {
-        ImageView imageNext = rootView.findViewById(R.id.image_next);
+        final ImageView imageNext = rootView.findViewById(R.id.image_next);
         imageNext.setVisibility(View.VISIBLE);
         imageNext.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,7 +117,7 @@ public class AddImageFragment extends Fragment {
                 Report currentReport = PostManager.getInstance().getCurrentReport();
                 currentReport.setSelectedImage(selectedImage);
 
-                currentReport.setImageRotation(imageView.getRotation() + totalRotation);
+                currentReport.setImageRotation(rotateBitmap.getRotation() + imageView.getRotation());
                 getFragmentManager().popBackStackImmediate();
             }
         });
@@ -188,19 +188,17 @@ public class AddImageFragment extends Fragment {
                 imageUri = data.getData();
             } else if (requestCode == CAMERA_REQ_CODE) {
                 imageUri = Uri.parse(currentPhotoPath);
-                checkRotation(imageUri);
             }
-            Picasso.get().load(imageUri).fit().into(imageView, new Callback() {
-                @Override
-                public void onSuccess() {
-                    progressBar.setVisibility(View.GONE);
-                }
 
-                @Override
-                public void onError(Exception e) {
-
-                }
-            });
+            rotateBitmap = new RotateBitmap();
+            Bitmap img = null;
+            try {
+                img = rotateBitmap.HandleSamplingAndRotationBitmap(getActivity(), imageUri, imageView.getHeight(), imageView.getWidth());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            imageView.setImageBitmap(img);
+            progressBar.setVisibility(View.GONE);
             selectedImage = imageUri.toString();
             initRotateBtn();
             initImgNext();
@@ -256,20 +254,28 @@ public class AddImageFragment extends Fragment {
         return image;
     }
 
-    private void checkRotation(Uri imgUri) {
+    private Bitmap checkRotation(Uri imgUri) {
 
-        if (imgUri.getScheme().equals("content")) {
-            Log.d(TAG, "checkRotation: scheme is content");
-            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
-            Cursor c = getContext().getContentResolver().query(imgUri, projection, null, null, null);
-            if (c.moveToFirst()) {
-//                totalRotation = c.getInt(0);
-                Log.d(TAG, "checkRotation: totalrotation " + totalRotation);
-                c.close();
-            }
-        } else {
-            try {
-                InputStream input = getContext().getContentResolver().openInputStream(imgUri);
+//        if (imgUri.getScheme().equals("content")) {
+//            Log.d(TAG, "checkRotation: scheme is content");
+//            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
+//            Cursor c = getContext().getContentResolver().query(imgUri, projection, null, null, null);
+//            if (c.moveToFirst()) {
+////                totalRotation = c.getInt(0);
+//                Log.d(TAG, "checkRotation: totalrotation " + totalRotation);
+//                c.close();
+//            }
+//        } else {
+        Bitmap bitmap = null;
+        try {
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                options.inJustDecodeBounds = true;
+//                InputStream inputStream = getContext().getContentResolver().openInputStream(imgUri);
+//                Bitmap img = BitmapFactory.decodeStream(inputStream);
+//                inputStream.close();
+
+            bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imgUri);
+            InputStream input = getContext().getContentResolver().openInputStream(imgUri);
                 ExifInterface ei;
                 if (Build.VERSION.SDK_INT > 23) {
                     ei = new ExifInterface(input);
@@ -278,32 +284,47 @@ public class AddImageFragment extends Fragment {
                 }
 
                 int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                        ExifInterface.ORIENTATION_UNDEFINED);
+                        ExifInterface.ORIENTATION_NORMAL);
                 float rotation;
 
                 switch (orientation) {
                     case ExifInterface.ORIENTATION_ROTATE_90:
-                        rotation = 90;
-                        break;
+                        totalRotation=rotation = 90;
+                        return rotateImage(bitmap, 90);
+//                        break;
 
                     case ExifInterface.ORIENTATION_ROTATE_180:
-                        rotation = 180;
-                        break;
+                        totalRotation=rotation = 180;
+                        return rotateImage(bitmap, 180);
+//                        break;
 
                     case ExifInterface.ORIENTATION_ROTATE_270:
-                        rotation = 270;
-                        break;
+                        totalRotation=rotation = 270;
+                        return rotateImage(bitmap, 270);
+
+//                        break;
 
                     case ExifInterface.ORIENTATION_NORMAL:
                     default:
-                        rotation = 0;
+                        totalRotation=rotation = 0;
+                        return bitmap;
                 }
-                Log.d(TAG, "checkRotation: " + rotation);
-                totalRotation = rotation;
+//                Log.d(TAG, "checkRotation: " + rotation);
+//                totalRotation = rotation;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+//        }
         Log.d(TAG, "checkRotation: imageView rotation " +imageView.getRotation());
+        return bitmap;
+    }
+
+    private static Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(img,0,0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle();
+        return rotatedBitmap;
+
     }
 }

@@ -13,12 +13,24 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true" />
 
-    <RelativeLayout
+<!--    <ScrollView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/bar">-->
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/bar"
+        android:orientation="vertical"
+        android:weightSum="100"
         android:padding="30dp">
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="80"
+            >
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,26 +64,28 @@
                 android:maxLines="5"
                 android:textSize="20sp"
                 android:layout_below="@id/type_spinner"/>
+            <ImageView
+                android:id="@+id/shared_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@id/report_edit_text"
+                android:contentDescription="@string/shared_img"/>
         </RelativeLayout>
+        </ScrollView>
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:gravity="bottom"
+            android:layout_weight="20"
             android:id="@+id/rel_layout">
-
-            <ImageView
-                android:id="@+id/shared_image"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="@string/shared_img"/>
 
             <Button
                 android:id="@+id/btn_upload_photo"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_below="@id/shared_image"
                 android:background="@drawable/ic_camera" />
 
             <TextView
@@ -87,12 +101,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
-                android:layout_below="@id/shared_image"
                 android:text="@string/submit"
                 android:textSize="15sp"
                 android:layout_marginBottom="10dp"
                 android:background="@drawable/custom_button"/>
         </RelativeLayout>
-    </RelativeLayout>
+    </LinearLayout>
+
+<!--    </ScrollView>-->
 
 </RelativeLayout>

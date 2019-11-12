@@ -156,7 +156,6 @@ public class PostReportFragment extends Fragment {
 
         String selectedImage = currentReport.getSelectedImage();
         if(!TextUtils.isEmpty(selectedImage)) {
-//            setImagePreview(selectedImage);
             sharedImage.setImageURI(Uri.parse(selectedImage));
             sharedImage.setRotation(currentReport.getImageRotation());
             sharedImage.setOnClickListener(new View.OnClickListener() {

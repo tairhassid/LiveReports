@@ -94,7 +94,6 @@ public class MapFragment extends Fragment {
         getLocationPermission();
         initFab();
         initMenu();
-//        initAppBar();
 
         return rootView;
     }
@@ -260,13 +259,15 @@ public class MapFragment extends Fragment {
                 Log.d(TAG, "getReportsWithinArea onCallback");
                 for(Report report : callbackObject) {
                     GeoPoint reportGeo = report.getGeoPoint();
+
+                    int color = new Random().nextInt(Constants.COLORS.length);
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .position(
                                     new LatLng(
                                             reportGeo.getLatitude(),
                                             reportGeo.getLongitude()))
                             .icon(BitmapDescriptorFactory.defaultMarker(
-                                    Constants.COLORS[new Random().nextInt(Constants.COLORS.length)]))
+                                    Constants.COLORS[color]))
                             .title(Functions.parseReportType(report).toString())
                     );
                     markerReportMap.put(marker, report);

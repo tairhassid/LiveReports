@@ -48,7 +48,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         repeatPasswordText = findViewById(R.id.txt_repeat_password);
         mStatusTextView = findViewById(R.id.status);
 
-//        findViewById(R.id.btn_sign_in).setOnClickListener(this);
         findViewById(R.id.btn_Register).setOnClickListener(this);
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -74,7 +73,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
+                        if (task.isSuccessful()) { //new user created
                             Log.d(TAG, "createUserWithEmail:success");
                             moveToMainActivity();
                         } else {
@@ -84,10 +83,10 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
                             try {
                                 throw task.getException();
-                            } catch(FirebaseAuthWeakPasswordException e) {
+                            } catch(FirebaseAuthWeakPasswordException e) { //under 6 characters password
                                 passwordText.setError(e.getReason());
                                 passwordText.requestFocus();
-                            } catch(FirebaseAuthUserCollisionException e) {
+                            } catch(FirebaseAuthUserCollisionException e) { //Email already registered
                                 emailText.setError(getString(R.string.error_user_exists));
                                 emailText.requestFocus();
                             } catch(Exception e) {

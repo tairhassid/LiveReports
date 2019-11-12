@@ -79,6 +79,7 @@ public class PostReportActivity extends AppCompatActivity {
     @Override
     public void finish() {
         super.finish();
+        //animation out
         overridePendingTransition(R.anim.slide_enter_diagonal, R.anim.slide_exit_diagonal);
     }
 }

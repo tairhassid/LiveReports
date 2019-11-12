@@ -3,6 +3,7 @@ package liveReports.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -96,6 +98,8 @@ public class WatchReportActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar_image);
         progressBar.setVisibility(View.VISIBLE);
 
+//        imageView.setImageURI(Uri.parse(report.getImageDownloadUrl()));
+
         Picasso.get().load(report.getImageDownloadUrl()).into(imageView, new Callback() {
             @Override
             public void onSuccess() {
@@ -104,7 +108,8 @@ public class WatchReportActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
-
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(WatchReportActivity.this, "Failed to load photo", Toast.LENGTH_LONG).show();
             }
         });
     }
