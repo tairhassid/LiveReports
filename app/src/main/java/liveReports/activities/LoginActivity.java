@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 
 import liveReports.livereports.R;
@@ -65,7 +66,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         int id = view.getId();
         switch (id) {
             case(R.id.btn_Register):
-//                createAccount(emailText.getText().toString(), passwordText.getText().toString());
                 Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 startActivity(intent);
                 break;
@@ -73,36 +73,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 signIn(emailText.getText().toString(), passwordText.getText().toString());
         }
     }
-
-//    private void createAccount(String email, String password) {
-//        if(!validateForm()) {
-//            return;
-//        }
-//        showProgressDialog();
-//
-//        mAuth.createUserWithEmailAndPassword(email, password)
-//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            // Sign in success, update UI with the signed-in user's information
-//                            Log.d(TAG, "createUserWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
-//                            updateUI(user);
-//                        } else {
-//                            // If sign in fails, display a message to the user.
-//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-//                            Toast.makeText(LoginActivity.this, "Authentication failed.",
-//                                    Toast.LENGTH_SHORT).show();
-//                            updateUI(null);
-//                        }
-//
-//                        // [START_EXCLUDE]
-//                        hideProgressDialog();
-//                        // [END_EXCLUDE]
-//                    }
-//                });
-//    }
 
     private void signIn(String email, String password) {
         Log.d(TAG, "signIn:" + email);
@@ -127,12 +97,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
+
+                            if(task.getException() != null)
+                                try {
+                                throw task.getException();
+                            } catch(FirebaseAuthInvalidCredentialsException e) {
+                                emailText.setError(getString(R.string.error_invalid_email));
+                                emailText.requestFocus();
+                            } catch (Exception e) {
+                                Log.e(TAG, e.getMessage());
+                            }
                             updateUI(null);
                         }
 
                         // [START_EXCLUDE]
                         if (!task.isSuccessful()) {
-                            mStatusTextView.setText("Authentication failed");
+                            mStatusTextView.setText(R.string.auth_failed);
                         }
                         hideProgressDialog();
                         // [END_EXCLUDE]

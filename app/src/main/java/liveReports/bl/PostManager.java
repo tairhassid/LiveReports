@@ -1,10 +1,8 @@
 package liveReports.bl;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.GeoPoint;
 
 import liveReports.data.ReportData;
@@ -53,15 +51,14 @@ public class PostManager {
 //        }
     }
 
-    public boolean saveCurrentReportToDatabase(Context context, CallbacksHandler callbacksHandler) {
+    public void saveCurrentReportToDatabase(Context context, CallbacksHandler<String> callbacksHandler) {
         if(currentReport.getName().equals("") ||
                 (currentReport.getReportText().equals("") &&
                         currentReport.getSelectedImage().equals(""))) {
             Log.d(TAG, "saveCurrentReportToDatabase: returning false");
-            return false;
+            return;
         }
         reportData.save(context, currentReport, callbacksHandler);
-        return true;
     }
 
 

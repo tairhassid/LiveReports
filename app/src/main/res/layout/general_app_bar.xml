@@ -8,47 +8,40 @@
         android:layout_height="wrap_content"
         android:background="@color/mainColor">
 
-<!--        <Toolbar-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:id="@+id/toolbar_gallery">-->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <Button
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="20dp"
+                android:layout_centerVertical="true"
+                android:id="@+id/back_btn"
+                android:background="@drawable/ic_back"/>
 
-                <Button
-                    android:layout_width="50dp"
-                    android:layout_height="60dp"
-                    android:layout_marginEnd="20dp"
-                    android:layout_centerVertical="true"
-                    android:id="@+id/back_btn"
-                    android:background="@drawable/ic_back"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-black"
+                android:padding="15dp"
+                android:textSize="25sp"
+                android:textColor="#5f3e2e"
+                android:layout_toRightOf="@id/back_btn"
+                android:id="@+id/text_view_headline"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-black"
-                    android:padding="15dp"
-                    android:textSize="25sp"
-                    android:textColor="#5f3e2e"
-                    android:layout_toRightOf="@id/back_btn"
-                    android:id="@+id/text_view_headline"/>
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_v_next"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="15dp"
+                android:layout_centerVertical="true"
+                android:id="@+id/image_next"
+                android:visibility="gone"
+                android:contentDescription="@string/v_next"/>
 
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:src="@drawable/ic_v_next"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginRight="15dp"
-                    android:layout_centerVertical="true"
-                    android:id="@+id/image_next"
-                    android:visibility="gone"/>
-
-            </RelativeLayout>
-
-
-<!--        </Toolbar>-->
+        </RelativeLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

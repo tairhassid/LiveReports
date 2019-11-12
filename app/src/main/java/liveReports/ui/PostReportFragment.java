@@ -1,17 +1,17 @@
 package liveReports.ui;
 
-import android.app.ActivityOptions;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -24,19 +24,15 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.firestore.GeoPoint;
-
-import org.w3c.dom.Text;
-
-import java.io.IOException;
 
 import liveReports.activities.MainActivity;
 import liveReports.activities.PostReportActivity;
@@ -45,6 +41,7 @@ import liveReports.bl.Report;
 import liveReports.livereports.R;
 import liveReports.utils.AddImagePermissions;
 import liveReports.utils.CallbacksHandler;
+import liveReports.utils.Constants;
 import liveReports.utils.LocationService;
 import liveReports.utils.LocationService.LocalBinder;
 
@@ -71,6 +68,7 @@ public class PostReportFragment extends Fragment {
     private ImageView sharedImage;
     private TextView headlineText;
     private TextView errorText;
+    private ProgressDialog mProgressDialog;
 
 
     @Override
@@ -164,7 +162,7 @@ public class PostReportFragment extends Fragment {
             sharedImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    //TODO
                 }
             });
         }
@@ -233,11 +231,37 @@ public class PostReportFragment extends Fragment {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                updateCurrentReport(view.getId());
-                Log.d(TAG, "onClick: " + geoPoint.getLatitude());
-                Log.d(TAG, "onClick: item= " + itemSelected.getItem());
+                if(hasInternetConnection()) {
+                    updateCurrentReport(view.getId());
+                    Log.d(TAG, "onClick: " + geoPoint.getLatitude());
+                    Log.d(TAG, "onClick: item= " + itemSelected.getItem());
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setMessage(R.string.cant_upload_report_message)
+                            .setTitle(R.string.cant_upload_report_title)
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+
+                                }
+                            });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
             }
         });
+    }
+
+    //taken from https://developer.android.com/training/monitoring-device-state/connectivity-monitoring
+    private boolean hasInternetConnection() {
+        ConnectivityManager cm =
+                (ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+
     }
 
     private void updateCurrentReport(int id) {
@@ -249,14 +273,36 @@ public class PostReportFragment extends Fragment {
                     reportText.getText().toString(),
                     geoPoint);
             if (id == R.id.btn_submit) {
-                if (checkInput())
-                    postManager.saveCurrentReportToDatabase(getActivity(), new CallbacksHandler<Uri>() {
-                        @Override
-                        public void onCallback(Uri callbackObject) {
-                            goBackToMainActivity();
-                        }
-                    });
+                saveReportToDatabase();
             }
+        }
+    }
+
+    private void saveReportToDatabase() {
+        if (checkInput()) {
+            showProgressDialog();
+            postManager.saveCurrentReportToDatabase(getActivity(), new CallbacksHandler<String>() {
+                @Override
+                public void onCallback(String callbackObject) {
+                    hideProgressDialog();
+                    if (callbackObject.equals(Constants.SUCCESS)) {
+                        goBackToMainActivity();
+                    } else {
+                        Log.d(TAG, "onCallback: " + callbackObject);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setMessage(R.string.cant_upload_report_message)
+                                .setTitle(R.string.cant_upload_report_title)
+                                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                                    }
+                                });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                }
+            });
         }
     }
 
@@ -271,7 +317,7 @@ public class PostReportFragment extends Fragment {
         if(!TextUtils.isEmpty(currentReport.getReportText()) ||
                 !TextUtils.isEmpty(currentReport.getSelectedImage())) {
         } else {
-            errorText.setText("A report must contain a text or a photo");
+            errorText.setText(R.string.blank_report);
             valid = false;
         }
         return valid;
@@ -304,7 +350,6 @@ public class PostReportFragment extends Fragment {
 
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-            Log.d(TAG, "onItemSelected: " + adapterView.getItemAtPosition(i) + " id= " + l);
             item = (String) adapterView.getItemAtPosition(i);
             itemId = l;
         }
@@ -322,11 +367,27 @@ public class PostReportFragment extends Fragment {
         }
     }
 
+    public void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(getActivity());
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setMessage("Posting report, please wait");
+        }
+
+        mProgressDialog.show();
+    }
+
+    public void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: ");
         getActivity().unbindService(connection);
         mBound = false;
     }
+
 }

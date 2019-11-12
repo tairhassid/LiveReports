@@ -20,7 +20,8 @@
                 android:layout_width="60dp"
                 android:layout_height="match_parent"
                 android:background="@drawable/logo2"
-                android:id="@+id/logo_image_view"/>
+                android:id="@+id/logo_image_view"
+                android:contentDescription="@string/logo"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -38,7 +39,8 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:id="@+id/menu"
-                android:src="@drawable/ic_menu"/>
+                android:src="@drawable/ic_menu"
+                android:contentDescription="@string/menu"/>
 
         </RelativeLayout>
 

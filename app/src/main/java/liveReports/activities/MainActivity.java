@@ -1,14 +1,11 @@
 package liveReports.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import liveReports.livereports.R;
 import liveReports.ui.MapFragment;
@@ -16,7 +13,6 @@ import liveReports.ui.MapFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FloatingActionButton fab;
     private static final String TAG = "MainActivity";
     private Fragment currentFragment;
 

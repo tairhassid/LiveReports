@@ -6,8 +6,12 @@
     tools:context="liveReports.ui.PostReportFragment"
     android:background="@drawable/background_style">
 
-    <include layout="@layout/general_app_bar"
-        android:id="@+id/bar"/>
+    <include
+        android:id="@+id/bar"
+        layout="@layout/general_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -24,7 +28,7 @@
                 android:id="@+id/name_edit_text"
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:hint="Reporter's name"
+                android:hint="@string/name"
                 android:inputType="text"
                 android:lines="1"
                 android:maxLength="15"
@@ -42,7 +46,7 @@
                 android:id="@+id/report_edit_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="type..."
+                android:hint="@string/report_txt_hint"
                 android:inputType="textMultiLine"
                 android:maxLength="150"
                 android:maxLines="5"
@@ -60,7 +64,8 @@
                 android:id="@+id/shared_image"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                android:scaleType="centerCrop"/>
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/shared_img"/>
 
             <Button
                 android:id="@+id/btn_upload_photo"
@@ -83,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_below="@id/shared_image"
-                android:text="Submit"
+                android:text="@string/submit"
                 android:textSize="15sp"
                 android:layout_marginBottom="10dp"
                 android:background="@drawable/custom_button"/>

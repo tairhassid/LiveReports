@@ -17,6 +17,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,15 +64,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         createAccount(email, password, passwordRepeat);
     }
 
-    private boolean checkInput(String email, String password, String passwordRepeat) {
-        if(TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(passwordRepeat)) {
-            Log.d(TAG, "checkInput: some input blank");
-            mStatusTextView.setText("All fields must be filled out!");
-            return false;
-        }
-        return true;
-    }
-
     private void createAccount(String email, String password, String passwordRepeat) {
         if(!validateForm(email, password, passwordRepeat)) {
             return;
@@ -81,15 +75,24 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
                             moveToMainActivity();
                         } else {
-                            // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(RegisterActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
+
+                            try {
+                                throw task.getException();
+                            } catch(FirebaseAuthWeakPasswordException e) {
+                                passwordText.setError(e.getReason());
+                                passwordText.requestFocus();
+                            } catch(FirebaseAuthUserCollisionException e) {
+                                emailText.setError(getString(R.string.error_user_exists));
+                                emailText.requestFocus();
+                            } catch(Exception e) {
+                                Log.e(TAG, e.getMessage());
+                            }
                         }
 
                         // [START_EXCLUDE]

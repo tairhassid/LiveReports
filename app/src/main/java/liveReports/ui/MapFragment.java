@@ -23,6 +23,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -34,6 +35,7 @@ import com.google.firebase.firestore.GeoPoint;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import liveReports.activities.LoginActivity;
 import liveReports.activities.PostReportActivity;
@@ -42,6 +44,8 @@ import liveReports.bl.Report;
 import liveReports.data.ReportData;
 import liveReports.livereports.R;
 import liveReports.utils.CallbacksHandler;
+import liveReports.utils.Constants;
+import liveReports.utils.Functions;
 import liveReports.utils.LocationHelper;
 
 public class MapFragment extends Fragment {
@@ -49,13 +53,10 @@ public class MapFragment extends Fragment {
     //constants
     private static final String TAG = "MapFragment";
     private static final float ZOOM = 15f;
-    private static final double DIF = 0.005;
     private static final int PERMISSION_REQ_ACCESS_FINE_LOCATION = 9003;
 
     //ui variables
-    private FloatingActionButton fab;
     private View rootView;
-    private ImageView menuView;
     private ProgressBar progressBar;
 
     //variables
@@ -99,7 +100,7 @@ public class MapFragment extends Fragment {
     }
 
     private void initMenu() {
-        menuView = rootView.findViewById(R.id.menu);
+        ImageView menuView = rootView.findViewById(R.id.menu);
 
         menuView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,7 +151,7 @@ public class MapFragment extends Fragment {
     }
 
     private void initFab() {
-        fab = rootView.findViewById(R.id.fab);
+        FloatingActionButton fab = rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -196,6 +197,17 @@ public class MapFragment extends Fragment {
                 mMap = googleMap;
                 setOnCameraMoveListener();
                 setOnMarkerClickListener();
+                setOnInfoWindowClickListener();
+            }
+        });
+    }
+
+    private void setOnInfoWindowClickListener() {
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Report report = markerReportMap.get(marker);
+                moveToWatchReportActivity(report);
             }
         });
     }
@@ -206,7 +218,8 @@ public class MapFragment extends Fragment {
             public boolean onMarkerClick(Marker marker) {
                 Report report = markerReportMap.get(marker);
                 Log.d(TAG, "onMarkerClick: report" + report);
-                moveToWatchReportActivity(report);
+                marker.showInfoWindow();
+//                moveToWatchReportActivity(report);
                 return true;
             }
         });
@@ -231,7 +244,7 @@ public class MapFragment extends Fragment {
                 GeoPoint center =
                         new GeoPoint(mMap.getCameraPosition().target.latitude,
                                 mMap.getCameraPosition().target.longitude);
-                if(distance(center, currentCameraPos) >= DIF) {
+                if(distance(center, currentCameraPos) >= Constants.DIF) {
                     getReportsWithinArea();
                     currentCameraPos = center;
                 }
@@ -240,14 +253,22 @@ public class MapFragment extends Fragment {
     }
 
     private void getReportsWithinArea() {
-        reportData.getReportsWithinArea(currentCameraPos, DIF, new CallbacksHandler<List<Report>>() {
+        reportData.getReportsWithinArea(currentCameraPos, new CallbacksHandler<List<Report>>() {
 
             @Override
             public void onCallback(List<Report> callbackObject) {
                 Log.d(TAG, "getReportsWithinArea onCallback");
                 for(Report report : callbackObject) {
-                    Marker marker = mMap.addMarker(new MarkerOptions().position(
-                            new LatLng(report.getGeoPoint().getLatitude(),report.getGeoPoint().getLongitude())));
+                    GeoPoint reportGeo = report.getGeoPoint();
+                    Marker marker = mMap.addMarker(new MarkerOptions()
+                            .position(
+                                    new LatLng(
+                                            reportGeo.getLatitude(),
+                                            reportGeo.getLongitude()))
+                            .icon(BitmapDescriptorFactory.defaultMarker(
+                                    Constants.COLORS[new Random().nextInt(Constants.COLORS.length)]))
+                            .title(Functions.parseReportType(report).toString())
+                    );
                     markerReportMap.put(marker, report);
                 }
                 progressBar.setVisibility(View.GONE);

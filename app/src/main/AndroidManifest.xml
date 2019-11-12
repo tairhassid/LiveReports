@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="liveReports.activities.RegisterActivity"></activity>
+        <activity android:name="liveReports.activities.RegisterActivity" />
         <activity android:name="liveReports.activities.SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -18,9 +18,10 @@
             </intent-filter>
         </activity>
         <activity android:name="liveReports.activities.WatchReportActivity" />
-        <activity android:name="liveReports.activities.LoginActivity"></activity>
-        <activity android:name="liveReports.activities.PostReportActivity"
-            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name="liveReports.activities.LoginActivity" />
+        <activity
+            android:name="liveReports.activities.PostReportActivity"
+            android:windowSoftInputMode="stateHidden" />
         <activity android:name="liveReports.activities.MainActivity" />
 
         <meta-data
@@ -41,11 +42,11 @@
             android:name="liveReports.utils.LocationService"
             android:stopWithTask="true" />
     </application>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 </manifest>

@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_margin="20dp"
-        android:src="@drawable/image_icon" />
+        android:src="@drawable/image_icon"
+        android:contentDescription="@string/default_image"/>
 
     <ProgressBar
         android:layout_width="100dp"

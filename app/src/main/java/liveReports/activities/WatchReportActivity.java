@@ -2,7 +2,6 @@ package liveReports.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -23,10 +22,12 @@ import com.squareup.picasso.Picasso;
 import liveReports.bl.PostManager;
 import liveReports.bl.Report;
 import liveReports.livereports.R;
+import liveReports.utils.Functions;
 
 public class WatchReportActivity extends AppCompatActivity {
 
     private static final String TAG = "WatchReportActivity";
+    private static final String REPORTER = "Reporter";
     private Button backBtn;
     private Report report;
     private TextView textViewName;
@@ -34,7 +35,6 @@ public class WatchReportActivity extends AppCompatActivity {
     private TextView textViewReportType;
     private RelativeLayout relativeLayout;
     private TextView textViewReportBody;
-    private ImageView imageView;
     private ProgressBar progressBar;
 
     @Override
@@ -48,17 +48,9 @@ public class WatchReportActivity extends AppCompatActivity {
             report = PostManager.getInstance().getCurrentReport();
         }
         Log.d(TAG, "onCreate: report = " + report);
-        textViewName = findViewById(R.id.text_view_name);
-        textViewName.setText(report.getName());
-
-        textViewTime = findViewById(R.id.text_view_time);
-        textViewTime.setText(report.getTimestamp().toString());
-
-        textViewReportType = findViewById(R.id.text_view_report_type);
-        textViewReportType.setText(parseReportType());
+        initReportDetails();
 
         relativeLayout = findViewById(R.id.rel_layout_watch_report);
-
 
         if(!TextUtils.isEmpty(report.getReportText())) {
             createReportBody();
@@ -69,39 +61,15 @@ public class WatchReportActivity extends AppCompatActivity {
         initBackButton();
     }
 
-//    @Override
-//    public void finish() {
-//        super.finish();
-//    }
+    private void initReportDetails() {
+        textViewName = findViewById(R.id.text_view_name);
+        textViewName.setText(new StringBuilder().append(REPORTER).append(" ").append(report.getName()).toString());
 
-    private String parseReportType() {
-        String typeName = report.getType().name();
-        StringBuilder sb = new StringBuilder();
-        int current = 0;
+        textViewTime = findViewById(R.id.text_view_time);
+        textViewTime.setText(report.getTimestamp().toString());
 
-        typeName = typeName.replace('_', ' ').toLowerCase();
-        Log.d(TAG, "parseReportType: " + typeName);
-        sb.append(typeName.substring(current, current+1).toUpperCase());
-        current++;
-
-        int index = 0;
-        while(index != -1) {
-            index = typeName.indexOf(" ", index);
-            Log.d(TAG, "parseReportType: index=" + index);
-            if(index != -1) {
-                sb.append(typeName.substring(current, index+1));
-                String c = typeName.charAt(index+1)+"";
-                sb.append(c.toUpperCase());
-                index++;
-                current = index+1;
-            } else {
-                sb.append(typeName.substring(current));
-            }
-        }
-
-        sb.append(" Report");
-        Log.d(TAG, "parseReportType: " + sb.toString());
-        return sb.toString();
+        textViewReportType = findViewById(R.id.text_view_report_type);
+        textViewReportType.setText(Functions.parseReportTypeWithEnding(report));
     }
 
     private void createReportImage() {
@@ -139,7 +107,6 @@ public class WatchReportActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
 

@@ -18,12 +18,14 @@ import liveReports.livereports.R;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
-    private static final String TAG = "SplashScreenActivity";
+    //constants
     public static final int ANIM_DURATION = 1000;
 
+    //firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
 
+    //ui variables
     private Button skipBtn;
     private Button signInBtn;
     private ImageView logoImageView;

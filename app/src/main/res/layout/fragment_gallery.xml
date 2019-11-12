@@ -44,7 +44,7 @@
             <Button
                 android:layout_width="190dp"
                 android:layout_height="wrap_content"
-                android:text="Choose from gallery"
+                android:text="@string/choose_from_gallery"
                 android:layout_below="@id/rotate"
                 android:layout_centerHorizontal="true"
                 android:id="@+id/btn_add_image"
@@ -54,7 +54,7 @@
             <Button
                 android:layout_width="190dp"
                 android:layout_height="wrap_content"
-                android:text="Take a photo"
+                android:text="@string/take_a_photo"
                 android:layout_marginTop="20dp"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/btn_add_image"

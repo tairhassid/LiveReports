@@ -28,8 +28,6 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.w3c.dom.Text;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,14 +38,21 @@ import java.util.concurrent.TimeUnit;
 import liveReports.bl.PostManager;
 import liveReports.bl.Report;
 import liveReports.utils.CallbacksHandler;
+import liveReports.utils.Constants;
 
 public class ReportData {
 
     private static final String TAG = "ReportData";
+    private static final String USERS = "users";
+    private static final String REPORTS = "reports";
+    private static final String GEO_POINT = "geoPoint";
+    private static final String IMAGE_DOWNLOAD_URL = "imageDownloadUrl";
+
     private final String PATH = "photos/posts/";
     private FirebaseAuth auth;
     private FirebaseFirestore db;
-    private DocumentReference ref;
+    private DocumentReference refToReportsByUser;
+    private DocumentReference refToReports;
     private StorageReference storageReference;
     private double mPhotoUploadProgress;
 
@@ -56,51 +61,53 @@ public class ReportData {
         this.auth = FirebaseAuth.getInstance();
         this.storageReference = FirebaseStorage.getInstance().getReference();
         this.db = FirebaseFirestore.getInstance();
-
     }
 
-    public void save(Context context, Report report, CallbacksHandler<Uri> callbacksHandler) {
+    public void save(Context context, Report report, CallbacksHandler<String> callbacksHandler) {
         saveReport(context, report, callbacksHandler);
     }
 
-
-    private void saveReport(final Context context, final Report report, final CallbacksHandler<Uri> callbacksHandler) {
-        ref = db.collection("reports").document();
-
-        ref.set(report).addOnCompleteListener(new OnCompleteListener<Void>() {
+    private void saveReport(final Context context, final Report report, final CallbacksHandler<String> callbacksHandler) {
+        refToReportsByUser = db.collection(USERS).document(auth.getCurrentUser().getUid()).collection(REPORTS).document();
+        refToReports = db.collection(REPORTS).document();
+        Log.d(TAG, "saveReport: refToReportsByUser " + refToReportsByUser);
+        refToReportsByUser.set(report).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()) {
                     Log.d(TAG, "onComplete: success");
-                    if(!report.getSelectedImage().equals("")) {
+                    refToReports.set(report);
+                    if(!TextUtils.isEmpty(report.getSelectedImage())) {
+                        Log.d(TAG, "onComplete: not empty");
                         storeImage(context, report, callbacksHandler);
                     } else {
-                        callbacksHandler.onCallback(null);
+                        Log.d(TAG, "onComplete: callback");
+                        callbacksHandler.onCallback(Constants.SUCCESS);
                     }
                 }
+                else {
+                    callbacksHandler.onCallback(Constants.FAIL);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: ");
+                callbacksHandler.onCallback(Constants.FAIL);
             }
         });
     }
 
-    private void storeImage(final Context context, Report report, final CallbacksHandler<Uri> callbacksHandler) {
-        final StorageReference photoStorageRef = storageReference.child(PATH + ref.getId());
+    private void storeImage(final Context context, Report report, final CallbacksHandler<String> callbacksHandler) {
+        final StorageReference photoStorageRef = storageReference.child(PATH + refToReportsByUser.getId());
         try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
-                    context.getContentResolver(),
-                    Uri.parse(report.getSelectedImage()));
-            Byte[] imageBytes;
-            Matrix m = new Matrix();
-            m.postRotate(report.getImageRotation());
-            bitmap = Bitmap.createBitmap(bitmap,0,0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
-            byte[] data = baos.toByteArray();
+            byte[] data = getBytes(context, report);
 
             UploadTask uploadTask = photoStorageRef.putBytes(data);
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
+                    callbacksHandler.onCallback(Constants.FAIL);
                 }
             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
@@ -120,7 +127,7 @@ public class ReportData {
                 public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
                     double progress = (100*taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                     Log.d(TAG, "onProgress: " + progress);
-                    if(progress - 15 > mPhotoUploadProgress) {
+                    if(progress - 10 > mPhotoUploadProgress) {
                         Toast.makeText(context,
                                 "Photo upload progress: " + String.format("%.0f", progress),
                                 Toast.LENGTH_SHORT).show();
@@ -133,33 +140,51 @@ public class ReportData {
         }
     }
 
-    private void addPhotoUrlToReport(final Uri uri, final CallbacksHandler<Uri> callbacksHandler) {
+    private byte[] getBytes(Context context, Report report) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                context.getContentResolver(),
+                Uri.parse(report.getSelectedImage()));
+        Matrix m = new Matrix();
+        m.postRotate(report.getImageRotation());
+        bitmap = Bitmap.createBitmap(bitmap,0,0, bitmap.getWidth(), bitmap.getHeight(), m, true);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+        return baos.toByteArray();
+    }
+
+    private void addPhotoUrlToReport(final Uri uri, final CallbacksHandler<String> callbacksHandler) {
         Report currentReport = PostManager.getInstance().getCurrentReport();
         currentReport.setImageDownloadUrl(uri.toString());
         Log.d(TAG, "addPhotoUrlToReport: updating database");
 
-        ref.update("imageDownloadUrl", uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        refToReportsByUser.update(IMAGE_DOWNLOAD_URL, uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                callbacksHandler.onCallback(uri);
+                refToReports.update(IMAGE_DOWNLOAD_URL, uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        callbacksHandler.onCallback(Constants.SUCCESS);
+                    }
+                });
             }
         });
+
+
     }
 
-
-    public void getReportsWithinArea(GeoPoint cameraPos, double wantedDif, final CallbacksHandler<List<Report>> callbacksHandler) {
-        CollectionReference collectionRef = db.collection("reports");
+    public void getReportsWithinArea(GeoPoint cameraPos, final CallbacksHandler<List<Report>> callbacksHandler) {
+        CollectionReference collectionRef = db.collection(REPORTS);
 
         //inspired by https://stackoverflow.com/questions/55959542/best-way-to-load-markers-from-firestore
         Query markers = collectionRef
                 .whereGreaterThanOrEqualTo(
-                        "geoPoint",
-                        new GeoPoint(cameraPos.getLatitude() - wantedDif,
-                                cameraPos.getLongitude() - wantedDif))
+                        GEO_POINT,
+                        new GeoPoint(cameraPos.getLatitude() - Constants.DIF,
+                                cameraPos.getLongitude() - Constants.DIF))
                 .whereLessThanOrEqualTo(
-                        "geoPoint",
-                        new GeoPoint(cameraPos.getLatitude() + wantedDif,
-                                cameraPos.getLongitude() + wantedDif));
+                        GEO_POINT,
+                        new GeoPoint(cameraPos.getLatitude() + Constants.DIF,
+                                cameraPos.getLongitude() + Constants.DIF));
 
         markers.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -183,15 +208,16 @@ public class ReportData {
     }
 
     //delete reports that were posted more than 24 hours ago
-    private boolean deleteOldReport(final Report report, DocumentSnapshot document) {
-        boolean returnValue = false;
+    private boolean deleteOldReport(Report report, DocumentSnapshot document) {
+        Log.d(TAG, "deleteOldReport: report = " + report);
+        final Report local = report;
         if(isOlderThanADay(report)) {
             final String imageName = document.getReference().getId();
             document.getReference().delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Log.d(TAG, "onSuccess: delete report " + report);
-                    if(!TextUtils.isEmpty(report.getImageDownloadUrl())) {
+                    Log.d(TAG, "onSuccess: delete report " + local);
+                    if(!TextUtils.isEmpty(local.getImageDownloadUrl())) {
                         deleteImage(imageName);
                     }
                 }
@@ -216,7 +242,7 @@ public class ReportData {
         Date cut = new Date(cutoff);
         Date reportTime = report.getTimestamp();
 
-        if(reportTime.before(cut)) {
+        if(reportTime != null && reportTime.before(cut)) {
             return true;
         }
         return false;

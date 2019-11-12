@@ -1,11 +1,10 @@
 package liveReports.activities;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-
-import android.Manifest;
-import android.os.Bundle;
 
 import liveReports.bl.PostManager;
 import liveReports.livereports.R;
@@ -13,11 +12,6 @@ import liveReports.ui.AddImageFragment;
 import liveReports.ui.PostReportFragment;
 
 public class PostReportActivity extends AppCompatActivity {
-
-    //constants
-    private static final String TAG = "PostReportActivity";
-
-    //variables
 
     //UI variables
     private Fragment currentFragment;
