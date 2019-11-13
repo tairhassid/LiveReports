@@ -28,8 +28,6 @@ public class SplashScreenActivity extends AppCompatActivity {
     //ui variables
     private Button skipBtn;
     private Button signInBtn;
-    private ImageView logoImageView;
-    private RelativeLayout relativeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +55,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void setButtonsAnimation() {
-        relativeLayout = findViewById(R.id.btns_layout);
+        RelativeLayout relativeLayout = findViewById(R.id.btns_layout);
         TranslateAnimation translateAnimation =
                 new TranslateAnimation(Animation.ABSOLUTE, Animation.ABSOLUTE, Animation.ABSOLUTE, Animation.ABSOLUTE,
                         Animation.RELATIVE_TO_PARENT, 1f, Animation.ABSOLUTE, 1f);
@@ -68,7 +66,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void setLogoAnimation() {
-        logoImageView = findViewById(R.id.logo);
+        ImageView logoImageView = findViewById(R.id.logo);
 
         TranslateAnimation translateAnimation =
                 new TranslateAnimation(Animation.ABSOLUTE, Animation.ABSOLUTE, Animation.ABSOLUTE, Animation.ABSOLUTE,

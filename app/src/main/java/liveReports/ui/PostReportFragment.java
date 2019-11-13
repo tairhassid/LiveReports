@@ -60,13 +60,9 @@ public class PostReportFragment extends Fragment {
     //UI variables
     private Spinner typeSpinner;
     private View fragmentView;
-    private Button submitButton;
-    private Button backButton;
-    private Button uploadImageButton;
     private EditText reportText;
     private EditText name;
     private ImageView sharedImage;
-    private TextView headlineText;
     private TextView errorText;
     private ProgressDialog mProgressDialog;
 
@@ -88,7 +84,7 @@ public class PostReportFragment extends Fragment {
         name = fragmentView.findViewById(R.id.name_edit_text);
         typeSpinner = fragmentView.findViewById(R.id.type_spinner);
         sharedImage = fragmentView.findViewById(R.id.shared_image);
-        headlineText = fragmentView.findViewById(R.id.text_view_headline);
+        TextView headlineText = fragmentView.findViewById(R.id.text_view_headline);
         errorText = fragmentView.findViewById(R.id.error);
 
         headlineText.setText(R.string.post_fragment_headline);
@@ -132,19 +128,16 @@ public class PostReportFragment extends Fragment {
         getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-//        getActivity().unbindService(connection);
-//        mBound = false;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if(addImagePermissions.hasAllPermissions()) {
+            Log.d(TAG, "onRequestPermissionsResult: moving to add image fragment");
             moveToAddImageFragment();
+        } else {
+            Toast.makeText(getActivity(), "Can't upload photos without permissions", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -157,7 +150,7 @@ public class PostReportFragment extends Fragment {
         String selectedImage = currentReport.getSelectedImage();
         if(!TextUtils.isEmpty(selectedImage)) {
             sharedImage.setImageURI(Uri.parse(selectedImage));
-            sharedImage.setRotation(currentReport.getImageRotation());
+//            sharedImage.setRotation(currentReport.getImageRotation());
             sharedImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -169,7 +162,7 @@ public class PostReportFragment extends Fragment {
     }
 
     private void initUploadImgBtn() {
-        uploadImageButton = fragmentView.findViewById(R.id.btn_upload_photo);
+        Button uploadImageButton = fragmentView.findViewById(R.id.btn_upload_photo);
         uploadImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -183,14 +176,16 @@ public class PostReportFragment extends Fragment {
     private void moveToAddImageFragment() {
         addImagePermissions = new AddImagePermissions(getActivity());
         if(addImagePermissions.hasAllPermissions()) {
+            Log.d(TAG, "moveToAddImageFragment: has all permissions");
             ((PostReportActivity)getActivity()).moveToAddImageFragment();
         } else {
+            Log.d(TAG, "moveToAddImageFragment: request permissions");
             addImagePermissions.getAllPermissions();
         }
     }
 
     private void initBackButton() {
-        backButton = fragmentView.findViewById(R.id.back_btn);
+        Button backButton = fragmentView.findViewById(R.id.back_btn);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -225,7 +220,7 @@ public class PostReportFragment extends Fragment {
     }
 
     private void initSubmitButton() {
-        submitButton = fragmentView.findViewById(R.id.btn_submit);
+        Button submitButton = fragmentView.findViewById(R.id.btn_submit);
 
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -309,13 +304,12 @@ public class PostReportFragment extends Fragment {
         boolean valid = true;
         Report currentReport = postManager.getCurrentReport();
         if(TextUtils.isEmpty(currentReport.getName())) {
-            name.setError("Required");
+            name.setError(getString(R.string.required));
             valid = false;
         }
 
-        if(!TextUtils.isEmpty(currentReport.getReportText()) ||
-                !TextUtils.isEmpty(currentReport.getSelectedImage())) {
-        } else {
+        if(TextUtils.isEmpty(currentReport.getReportText()) &&
+                TextUtils.isEmpty(currentReport.getSelectedImage())) {
             errorText.setText(R.string.blank_report);
             valid = false;
         }
@@ -366,17 +360,17 @@ public class PostReportFragment extends Fragment {
         }
     }
 
-    public void showProgressDialog() {
+    private void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(getActivity());
             mProgressDialog.setCancelable(false);
-            mProgressDialog.setMessage("Posting report, please wait");
+            mProgressDialog.setMessage(getString(R.string.posting_report));
         }
 
         mProgressDialog.show();
     }
 
-    public void hideProgressDialog() {
+    private void hideProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
@@ -385,8 +379,13 @@ public class PostReportFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
         getActivity().unbindService(connection);
         mBound = false;
     }
-
 }

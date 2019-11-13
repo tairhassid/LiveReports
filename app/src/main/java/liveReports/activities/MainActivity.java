@@ -10,10 +10,9 @@ import androidx.fragment.app.Fragment;
 import liveReports.livereports.R;
 import liveReports.ui.MapFragment;
 
-
+//holds MapFragment
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
     private Fragment currentFragment;
 
     @Override
@@ -42,8 +41,6 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().
                     add(R.id.fragment_container, firstFragment).commit();
         }
-
-        Log.d(TAG, "onCreate: ");
     }
 
     @Override
@@ -51,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.d(TAG, "onRequestPermissionsResult: ");
         currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 

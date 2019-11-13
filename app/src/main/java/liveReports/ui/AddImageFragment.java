@@ -3,12 +3,8 @@ package liveReports.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import androidx.exifinterface.media.ExifInterface;
-
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -28,7 +24,6 @@ import androidx.fragment.app.Fragment;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -53,7 +48,6 @@ public class AddImageFragment extends Fragment {
     private String selectedImage;
     private String currentPhotoPath;
     private File photoFile;
-    private float totalRotation;
     private RotateBitmap rotateBitmap;
 
     //ui vars
@@ -102,8 +96,6 @@ public class AddImageFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 imageView.setRotation(imageView.getRotation() + 90);
-                Log.d(TAG, "onClick: imageview: " + imageView.getRotation());
-                Log.d(TAG, "onClick: total: " +totalRotation);
             }
         });
     }
@@ -139,7 +131,6 @@ public class AddImageFragment extends Fragment {
         takePhotoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                startCamera();
                 dispatchTakePictureIntent();
             }
         });
@@ -163,18 +154,6 @@ public class AddImageFragment extends Fragment {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         startActivityForResult(intent, IMAGE_PICK_CODE);
-    }
-
-    private void startCamera() {
-        addImagePermissions = new AddImagePermissions(getActivity());
-
-            if(addImagePermissions.hasPermission(Manifest.permission.CAMERA)) {
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null)
-                    startActivityForResult(cameraIntent, CAMERA_REQ_CODE);
-            } else {
-                Toast.makeText(getActivity(), "You have to allow camera permission", Toast.LENGTH_LONG).show();
-            }
     }
 
     @Override
@@ -224,7 +203,6 @@ public class AddImageFragment extends Fragment {
                     Uri photoURI = FileProvider.getUriForFile(getActivity(),
                             "project.livereports.fileprovider",
                             photoFile);
-//                    Log.d(TAG, "dispatchTakePictureIntent: uri" + photoURI.toString());
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     startActivityForResult(takePictureIntent, CAMERA_REQ_CODE);
                 }
@@ -250,81 +228,6 @@ public class AddImageFragment extends Fragment {
         currentPhotoPath = image.getAbsolutePath();
         currentPhotoPath = Uri.fromFile(image).toString();
 
-//        Log.d(TAG, "createImageFile: currentPhotoPath " + Uri.fromFile(image).toString());
         return image;
-    }
-
-    private Bitmap checkRotation(Uri imgUri) {
-
-//        if (imgUri.getScheme().equals("content")) {
-//            Log.d(TAG, "checkRotation: scheme is content");
-//            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
-//            Cursor c = getContext().getContentResolver().query(imgUri, projection, null, null, null);
-//            if (c.moveToFirst()) {
-////                totalRotation = c.getInt(0);
-//                Log.d(TAG, "checkRotation: totalrotation " + totalRotation);
-//                c.close();
-//            }
-//        } else {
-        Bitmap bitmap = null;
-        try {
-//                BitmapFactory.Options options = new BitmapFactory.Options();
-//                options.inJustDecodeBounds = true;
-//                InputStream inputStream = getContext().getContentResolver().openInputStream(imgUri);
-//                Bitmap img = BitmapFactory.decodeStream(inputStream);
-//                inputStream.close();
-
-            bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imgUri);
-            InputStream input = getContext().getContentResolver().openInputStream(imgUri);
-                ExifInterface ei;
-                if (Build.VERSION.SDK_INT > 23) {
-                    ei = new ExifInterface(input);
-                } else {
-                    ei = new ExifInterface(imgUri.getPath());
-                }
-
-                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                        ExifInterface.ORIENTATION_NORMAL);
-                float rotation;
-
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        totalRotation=rotation = 90;
-                        return rotateImage(bitmap, 90);
-//                        break;
-
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        totalRotation=rotation = 180;
-                        return rotateImage(bitmap, 180);
-//                        break;
-
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        totalRotation=rotation = 270;
-                        return rotateImage(bitmap, 270);
-
-//                        break;
-
-                    case ExifInterface.ORIENTATION_NORMAL:
-                    default:
-                        totalRotation=rotation = 0;
-                        return bitmap;
-                }
-//                Log.d(TAG, "checkRotation: " + rotation);
-//                totalRotation = rotation;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-//        }
-        Log.d(TAG, "checkRotation: imageView rotation " +imageView.getRotation());
-        return bitmap;
-    }
-
-    private static Bitmap rotateImage(Bitmap img, int degree) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degree);
-        Bitmap rotatedBitmap = Bitmap.createBitmap(img,0,0, img.getWidth(), img.getHeight(), matrix, true);
-        img.recycle();
-        return rotatedBitmap;
-
     }
 }

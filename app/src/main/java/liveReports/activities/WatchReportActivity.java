@@ -24,11 +24,11 @@ import com.squareup.picasso.Picasso;
 import liveReports.bl.PostManager;
 import liveReports.bl.Report;
 import liveReports.livereports.R;
+import liveReports.utils.Constants;
 import liveReports.utils.Functions;
 
 public class WatchReportActivity extends AppCompatActivity {
 
-    private static final String TAG = "WatchReportActivity";
     private static final String REPORTER = "Reporter";
     private Button backBtn;
     private Report report;
@@ -39,17 +39,17 @@ public class WatchReportActivity extends AppCompatActivity {
     private TextView textViewReportBody;
     private ProgressBar progressBar;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_watch_report);
 
-        if(getIntent().hasExtra("report")) {
-            report = getIntent().getParcelableExtra("report");
+        if(getIntent().hasExtra(Constants.REPORT)) {
+            report = getIntent().getParcelableExtra(Constants.REPORT);
         } else {
             report = PostManager.getInstance().getCurrentReport();
         }
-        Log.d(TAG, "onCreate: report = " + report);
         initReportDetails();
 
         relativeLayout = findViewById(R.id.rel_layout_watch_report);

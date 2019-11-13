@@ -19,6 +19,7 @@ public class RotateBitmap {
     private float rotation;
 
     private static Bitmap rotateImage(Bitmap img, float degree) {
+        Log.d(TAG, "rotateImage: degree = " + degree);
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
         Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
@@ -29,8 +30,6 @@ public class RotateBitmap {
     public Bitmap HandleSamplingAndRotationBitmap(Context context, Uri selectedImage, int maxHeight, int maxWidth)
             throws IOException {
         mContext = context;
-//        int MAX_HEIGHT = 512;
-//        int MAX_WIDTH = 512;
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();

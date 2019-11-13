@@ -142,6 +142,7 @@ public class MapFragment extends Fragment {
 
     private void moveToLoginActivity() {
         Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
@@ -218,7 +219,6 @@ public class MapFragment extends Fragment {
                 Report report = markerReportMap.get(marker);
                 Log.d(TAG, "onMarkerClick: report" + report);
                 marker.showInfoWindow();
-//                moveToWatchReportActivity(report);
                 return true;
             }
         });
@@ -226,7 +226,7 @@ public class MapFragment extends Fragment {
 
     private void moveToWatchReportActivity(Report report) {
         Intent intent = new Intent(getActivity(), WatchReportActivity.class);
-        intent.putExtra("report", report);
+        intent.putExtra(Constants.REPORT, report);
 
         Bundle bundle = ActivityOptions.makeCustomAnimation(
                 getActivity(),

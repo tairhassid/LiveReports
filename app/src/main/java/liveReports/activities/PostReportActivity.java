@@ -11,6 +11,8 @@ import liveReports.livereports.R;
 import liveReports.ui.AddImageFragment;
 import liveReports.ui.PostReportFragment;
 
+
+//holds PostReportFragment and AddImageFragment
 public class PostReportActivity extends AppCompatActivity {
 
     //UI variables

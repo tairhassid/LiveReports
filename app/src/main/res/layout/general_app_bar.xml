@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    >
 
-    <com.google.android.material.appbar.AppBarLayout
+    <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:background="@color/mainColor">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layoutDirection="ltr">
 
             <Button
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="20dp"
                 android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
                 android:id="@+id/back_btn"
                 android:background="@drawable/ic_back"/>
 
@@ -27,21 +30,21 @@
                 android:padding="15dp"
                 android:textSize="25sp"
                 android:textColor="#5f3e2e"
-                android:layout_toRightOf="@id/back_btn"
+                android:layout_toEndOf="@id/back_btn"
                 android:id="@+id/text_view_headline"/>
 
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/ic_v_next"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="15dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="15dp"
                 android:layout_centerVertical="true"
                 android:id="@+id/image_next"
                 android:visibility="gone"
                 android:contentDescription="@string/v_next"/>
 
         </RelativeLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+    </androidx.appcompat.widget.Toolbar>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

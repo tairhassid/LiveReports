@@ -14,7 +14,7 @@ public class AddImagePermissions {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    private static final int PERMISSIONS_REQ_CODE = 1;
+    public static final int PERMISSIONS_REQ_CODE = 1;
 
 
     public AddImagePermissions(Activity callingActivity) {

@@ -95,14 +95,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                            Toast.makeText(LoginActivity.this, getString(R.string.auth_failed),
                                     Toast.LENGTH_SHORT).show();
 
                             if(task.getException() != null)
                                 try {
                                 throw task.getException();
                             } catch(FirebaseAuthInvalidCredentialsException e) {
-                                emailText.setError(getString(R.string.error_invalid_email));
+                                emailText.setError(getString(R.string.error_invalid_email_password));
                                 emailText.requestFocus();
                             } catch (Exception e) {
                                 Log.e(TAG, e.getMessage());
@@ -126,7 +126,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         String email = emailText.getText().toString();
         if (TextUtils.isEmpty(email)) {
-            emailText.setError("Required.");
+            emailText.setError(getString(R.string.required));
             valid = false;
         } else {
             emailText.setError(null);
@@ -134,7 +134,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         String password = passwordText.getText().toString();
         if (TextUtils.isEmpty(password)) {
-            passwordText.setError("Required.");
+            passwordText.setError(getString(R.string.required));
             valid = false;
         } else {
             passwordText.setError(null);
@@ -147,7 +147,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this);
             mProgressDialog.setCancelable(false);
-            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setMessage(getString(R.string.loading));
         }
 
         mProgressDialog.show();

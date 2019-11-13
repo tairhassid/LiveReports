@@ -56,7 +56,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View view) {
         String email = emailText.getText().toString();
-        Log.d(TAG, "onClick: " + email);
         String password = passwordText.getText().toString();
         String passwordRepeat = repeatPasswordText.getText().toString();
 
@@ -115,10 +114,10 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         Matcher matcher = pattern.matcher(email);
 
         if (TextUtils.isEmpty(email)) {
-            emailText.setError("Required");
+            emailText.setError(getString(R.string.required));
             valid = false;
         } else if(!matcher.matches()) {
-            emailText.setError("Email address is not valid");
+            emailText.setError(getString(R.string.email_not_valid));
             valid = false;
         } else {
             emailText.setError(null);
@@ -126,14 +125,14 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
 
         if (TextUtils.isEmpty(password)) {
-            passwordText.setError("Required.");
+            passwordText.setError(getString(R.string.required));
             valid = false;
         } else {
             passwordText.setError(null);
         }
 
         if(!password.equals(passwordRepeat)) {
-            repeatPasswordText.setError("Passwords don't match");
+            repeatPasswordText.setError(getString(R.string.pass_dont_match));
             valid = false;
         } else {
             repeatPasswordText.setError(null);
@@ -146,7 +145,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this);
             mProgressDialog.setCancelable(false);
-            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setMessage(getString(R.string.loading));
         }
 
         mProgressDialog.show();

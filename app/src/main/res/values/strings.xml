@@ -2,8 +2,8 @@
     <string name="app_name">LiveReports</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDXSygWK8Qdt5w_X4fFHFK__mlH2xOiXCQ</string>
 
-    <string name="share_report_headline">Share Your Report</string>
-    <string name="live_reports">Live Reports</string>
+
+    <!--authentication-->
     <string name="log_out">Log Out</string>
     <string name="log_in">Log In</string>
     <string name="register_new_account">Register new account</string>
@@ -11,16 +11,16 @@
     <string name="email_address_hint">email address</string>
     <string name="required">Required</string>
     <string name="email_not_valid">Email address is not valid</string>
-    <string name="error_invalid_email">Invalid email or password</string>
+    <string name="error_invalid_email_password">Invalid email or password</string>
     <string name="error_user_exists">Email address already registered</string>
+    <string name="pass_dont_match">Passwords don\'t match</string>
 
-
+    <!--headlines-->
+    <string name="live_reports">Live Reports</string>
+    <string name="share_report_headline">Share Your Report</string>
     <string name="post_fragment_headline">Share Your Report</string>
-    <string name="cant_upload_report_message">Please check internet connection and try again later.</string>
-    <string name="cant_upload_report_title">Failed to post your report</string>
+
     <string name="ok">OK</string>
-    <string name="no_internet">No internet connection. Can\'t post report</string>
-    <string name="blank_report">A report must contain a text or a photo</string>
     <string name="logo">logo</string>
     <string name="repeat_password_hint">Repeat Password</string>
     <string name="register">Register</string>
@@ -29,15 +29,26 @@
     <string name="choose_from_gallery">Choose from gallery</string>
     <string name="take_a_photo">Take a photo</string>
     <string name="name">Reporter\'s name</string>
-    <string name="report_txt_hint">type...</string>
+    <string name="report_txt_hint">type in your report...</string>
     <string name="shared_img">shared_img</string>
     <string name="submit">Submit</string>
     <string name="v_next">v next</string>
     <string name="menu">menu</string>
     <string name="default_image">default image</string>
+    <string name="posting_report">"Posting report, please wait"</string>
+    <string name="loading">"Loading..."</string>
+
+    <!--errors-->
+    <string name="cant_upload_report_message">Please check internet connection and try again later.</string>
+    <string name="cant_upload_report_title">Failed to post your report</string>
+    <string name="no_internet">No internet connection. Can\'t post report</string>
+    <string name="blank_report">A report must contain a text or a photo</string>
     <string name="auth_failed">Authentication failed</string>
 
 
+
+
+    <!--report types-->
     <string-array name="types_array">
         <item name="weather">Weather</item>
         <item>Safety Hazard</item>

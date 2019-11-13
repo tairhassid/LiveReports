@@ -14,12 +14,14 @@
             android:layout_height="match_parent"
             android:id="@+id/app_bar_relative_layout"
             android:layout_marginRight="10dp"
-            android:layout_marginLeft="10dp">
+            android:layout_marginLeft="10dp"
+            android:layoutDirection="ltr">
 
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="match_parent"
                 android:background="@drawable/logo2"
+                android:layout_alignParentStart="true"
                 android:id="@+id/logo_image_view"
                 android:contentDescription="@string/logo"/>
 
@@ -31,7 +33,7 @@
                 android:text="@string/live_reports"
                 android:textSize="25sp"
                 android:textColor="#5f3e2e"
-                android:layout_toRightOf="@id/logo_image_view"
+                android:layout_toEndOf="@id/logo_image_view"
                 android:id="@+id/app_bar_text"/>
 
             <ImageView

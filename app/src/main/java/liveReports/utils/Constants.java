@@ -7,6 +7,8 @@ public class Constants {
     public static String SUCCESS = "success";
     public static String FAIL = "fail";
 
+    public static String REPORT = "report";
+
     public static final double DIF = 0.005;
 
     public static final float[] COLORS = {

@@ -39,6 +39,7 @@ public class LocationHelper {
         Log.d(TAG, "LocationHelper: " + callingActivity.toString());
     }
 
+    //calls the callback function when location is available
     private void initLocationCallback(final CallbacksHandler<LatLng> callbacksHandler) {
         locationCallback = new LocationCallback() {
 
@@ -76,14 +77,11 @@ public class LocationHelper {
     }
 
     public void setLatLng(final CallbacksHandler<LatLng> callbacksHandler) {
-        Log.d(TAG, "setLatLng: called " + currentLatLng);
         Task location = fusedLocationProviderClient.getLastLocation();
         location.addOnSuccessListener(callingActivity, new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                Log.d(TAG, "onSuccess: called");
                 if (location != null) {
-                    Log.d(TAG, "getLastKnownLocation: location " + location );
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                     setCurrentLatLng(latLng);
                     Log.d(TAG, "onSuccess: " + getCurrentLatlng());
@@ -92,6 +90,7 @@ public class LocationHelper {
                 else {
                     Log.d(TAG, "onSuccess: location is null");
                     initLocationCallback(callbacksHandler);
+                    //to try again later
                     fusedLocationProviderClient.requestLocationUpdates(createLocationRequest(), locationCallback, null );
                     callbacksHandler.onCallback(null);
                 }
@@ -114,7 +113,6 @@ public class LocationHelper {
     }
 
     public LatLng getCurrentLatlng() {
-//        Log.d(TAG, "getCurrentLatlng: " + currentLatLng);
         return currentLatLng;
     }
 
